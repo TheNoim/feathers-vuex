@@ -18,7 +18,7 @@ import prepareMakeAuthPlugin from './auth-module/make-auth-plugin'
 import useFind from './useFind'
 import useGet from './useGet'
 
-import { FeathersVuexOptions } from './service-module/types'
+import { FeathersVuexOptions } from './types'
 import { initAuth, hydrateApi } from './utils'
 import { FeathersVuex } from './vue-plugin/vue-plugin'
 
