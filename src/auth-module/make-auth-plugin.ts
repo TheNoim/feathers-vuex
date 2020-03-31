@@ -3,17 +3,35 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import { FeathersVuexOptions } from '../service-module/types'
-import setupState from './auth-module.state'
-import setupGetters from './auth-module.getters'
-import setupMutations from './auth-module.mutations'
-import setupActions from './auth-module.actions'
+import { FeathersVuexOptions } from '../types'
+import { AuthenticationOptions } from './types'
+import makeState from './auth-module.state'
+import makeGetters from './auth-module.getters'
+import makeMutations from './auth-module.mutations'
+import makeActions from './auth-module.actions'
+import {
+  AuthenticationClient,
+  AuthenticationClientOptions
+} from '@feathersjs/authentication-client'
+import { Application } from '@feathersjs/feathers'
+import auth from '@feathersjs/authentication-client'
 
-const defaults = {
+import _pick from 'lodash/pick'
+
+interface AuthenticationDefaults {
+  namespace: string
+  userService: string
+  serverAlias: string
+  state: {}
+  getters: {}
+  mutations: {}
+  actions: {}
+}
+
+const defaults: AuthenticationDefaults = {
   namespace: 'auth',
   userService: '', // Set this to automatically populate the user (using an additional request) on login success.
   serverAlias: 'api',
-  debug: false,
   state: {}, // for custom state
   getters: {}, // for custom getters
   mutations: {}, // for custom mutations
@@ -21,18 +39,38 @@ const defaults = {
 }
 
 export default function authPluginInit(
-  feathersClient,
+  feathersClient: Application,
   globalOptions: FeathersVuexOptions
 ) {
   if (!feathersClient || !feathersClient.service) {
     throw new Error('You must pass a Feathers Client instance to feathers-vuex')
   }
 
-  return function makeAuthPlugin(options) {
+  return function makeAuthPlugin(options: AuthenticationOptions) {
+    const clientProps = [
+      'storage',
+      'path',
+      'locationKey',
+      'locationErrorKey',
+      'jwtStrategy',
+      'storageKey',
+      'header',
+      'scheme',
+      'Authentication'
+    ]
+
+    if (clientProps.some(propKey => options[propKey])) {
+      const propsForAuth = _pick(options, clientProps)
+      feathersClient.configure(auth(propsForAuth))
+    }
+
     options = Object.assign(
       {},
       defaults,
-      { serverAlias: globalOptions.serverAlias },
+      {
+        serverAlias: globalOptions.serverAlias,
+        debug: globalOptions.debug
+      },
       options
     )
 
@@ -47,10 +85,10 @@ export default function authPluginInit(
       )
     }
 
-    const defaultState = setupState(options)
-    const defaultGetters = setupGetters(options)
-    const defaultMutations = setupMutations()
-    const defaultActions = setupActions(feathersClient)
+    const defaultState = makeState(options)
+    const defaultGetters = makeGetters(options)
+    const defaultMutations = makeMutations()
+    const defaultActions = makeActions(feathersClient)
 
     return function setupStore(store) {
       const { namespace } = options

@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { AuthState } from '../src/auth-module/types'
+import { AuthenticationState } from '../src/auth-module/types'
 import { ServiceState } from './service-module/types'
 import { isNode, isBrowser } from '../src/utils'
 import { diff as deepDiff } from 'deep-object-diff'
@@ -18,20 +18,21 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 interface RootState {
-  auth: AuthState,
+  auth: AuthenticationState
   users: ServiceState
 }
 
 describe('Utils', function() {
   before(function() {
-    const { makeServicePlugin, makeAuthPlugin, BaseModel } = feathersVuex(
-      feathersClient,
-      { serverAlias: 'utils' }
-    )
+    const {
+      makeServicePlugin,
+      makeAuthPlugin,
+      BaseModel
+    } = feathersVuex(feathersClient, { serverAlias: 'utils' })
 
     class User extends BaseModel {
       public static modelName = 'User'
-      public static test: boolean = true
+      public static test = true
     }
 
     Object.assign(this, {
@@ -80,14 +81,15 @@ describe('Utils', function() {
   })
 
   it('properly hydrate SSR store', function() {
-    const { makeServicePlugin, BaseModel, models } = feathersVuex(
-      feathersClient,
-      { serverAlias: 'hydrate' }
-    )
+    const {
+      makeServicePlugin,
+      BaseModel,
+      models
+    } = feathersVuex(feathersClient, { serverAlias: 'hydrate' })
 
     class User extends BaseModel {
       public static modelName = 'User'
-      public static test: boolean = true
+      public static test = true
     }
 
     const store = new Vuex.Store<RootState>({
@@ -97,7 +99,7 @@ describe('Utils', function() {
           servicePath: 'users',
           service: feathersClient.service('users'),
           mutations: {
-            addServerItem (state) {
+            addServerItem(state) {
               state.keyedById['abcdefg'] = { id: 'abcdefg', name: 'Guzz' }
             }
           }
@@ -106,9 +108,15 @@ describe('Utils', function() {
     })
     store.commit('users/addServerItem')
     assert(store.state.users.keyedById['abcdefg'], 'server document added')
-    assert(store.state.users.keyedById['abcdefg'] instanceof Object, 'server document is pure javascript object')
+    assert(
+      store.state.users.keyedById['abcdefg'] instanceof Object,
+      'server document is pure javascript object'
+    )
     hydrateApi({ api: models.hydrate })
-    assert(store.state.users.keyedById['abcdefg'] instanceof User, 'document hydrated')
+    assert(
+      store.state.users.keyedById['abcdefg'] instanceof User,
+      'document hydrated'
+    )
   })
 
   describe('Inflections', function() {

@@ -3,8 +3,19 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-export default function setupAuthState({ userService, serverAlias }) {
-  const state = {
+import _omit from 'lodash/omit'
+import { AuthenticationState, AuthenticationOptions } from './types'
+
+export default function setupAuthState(options: AuthenticationOptions) {
+  const nonStateProps = ['state', 'getters', 'mutations', 'actions']
+
+  const state: AuthenticationState = {
+    serverAlias: 'api',
+    namespace: 'auth',
+
+    user: null, // For a reactive user object, use the `user` getter.
+    userService: 'users',
+
     accessToken: null, // The JWT
     payload: null, // The JWT payload
     entityIdField: 'userId',
@@ -14,13 +25,10 @@ export default function setupAuthState({ userService, serverAlias }) {
     isLogoutPending: false,
 
     errorOnAuthenticate: null,
-    errorOnLogout: null,
-    user: null, // For a reactive user object, use the `user` getter.
-    serverAlias
+    errorOnLogout: null
   }
-  // If a userService string was passed, add a user attribute
-  if (userService) {
-    Object.assign(state, { userService })
-  }
-  return state
+
+  const startingState = _omit(options, nonStateProps)
+
+  return Object.assign({}, state, startingState)
 }

@@ -3,8 +3,13 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-export default function makeAuthGetters({ userService }) {
+
+import { AuthenticationOptions } from './types'
+
+export default function makeAuthGetters(options: AuthenticationOptions) {
   const getters = {}
+
+  const { userService } = options
 
   if (userService) {
     Object.assign(getters, {

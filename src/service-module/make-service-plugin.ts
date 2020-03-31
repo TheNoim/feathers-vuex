@@ -3,11 +3,8 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import {
-  FeathersVuexOptions,
-  MakeServicePluginOptions,
-  HandleEvents
-} from './types'
+import { FeathersVuexOptions } from '../types'
+import { MakeServicePluginOptions, HandleEvents } from './types'
 import makeServiceModule from './make-service-module'
 import { globalModels, prepareAddModel } from './global-models'
 import { makeNamespace, getServicePath, assignIfNotPresent } from '../utils'
