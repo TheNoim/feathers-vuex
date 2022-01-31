@@ -66,7 +66,6 @@ describe('Service Module - Reinitialization', function () {
       errorOnUpdate: null,
       idField: 'id',
       tempIdField: '__id',
-      ids: [],
       isCreatePending: false,
       isFindPending: false,
       isGetPending: false,
@@ -95,7 +94,7 @@ describe('Service Module - Reinitialization', function () {
       isIdCreatePending: [],
       isIdUpdatePending: [],
       isIdPatchPending: [],
-      isIdRemovePending: [],
+      isIdRemovePending: []
     }
 
     assert.deepEqual(

@@ -5,7 +5,6 @@ eslint
 */
 export interface ServiceState {
   options: {}
-  ids: (string | number)[]
   autoRemove: boolean
   errorOnFind: any
   errorOnGet: any

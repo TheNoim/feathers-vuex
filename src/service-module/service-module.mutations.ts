@@ -59,10 +59,6 @@ export default function makeServiceMutations() {
         item.__isTemp = true
         Vue.set(state.tempsById, tempId, item)
       } else {
-        // Only add the id if it's not already in the `ids` list.
-        if (!state.ids.includes(id)) {
-          state.ids.push(id)
-        }
         Vue.set(state.keyedById, id, item)
       }
     }
@@ -83,7 +79,7 @@ export default function makeServiceMutations() {
 
       // Update the record
       if (id !== null && id !== undefined) {
-        if (state.ids.includes(id)) {
+        if (!!state.keyedById[id]) {
           // Completely replace the item
           if (replaceItems) {
             if (Model && !(item instanceof Model)) {
@@ -113,7 +109,6 @@ export default function makeServiceMutations() {
 
           // if addOnUpsert then add the record into the state, else discard it.
         } else if (addOnUpsert) {
-          state.ids.push(id)
           Vue.set(state.keyedById, id, item)
         }
         continue
@@ -166,10 +161,6 @@ export default function makeServiceMutations() {
         // If an item already exists in the store from the `created` event firing
         // it will be replaced here
         Vue.set(state.keyedById, id, temp)
-        // Only add the id if it's not already in the `ids` list.
-        if (!state.ids.includes(id)) {
-          state.ids.push(id)
-        }
       }
 
       // Add _id to temp's clone as well if it exists
@@ -186,15 +177,13 @@ export default function makeServiceMutations() {
       const { idField } = state
       const idToBeRemoved = _isObject(item) ? getId(item, idField) : item
       const isIdOk = idToBeRemoved !== null && idToBeRemoved !== undefined
-      const index = state.ids.findIndex(i => i === idToBeRemoved)
 
       const Model = _get(models, `[${state.serverAlias}][${state.modelName}]`)
       const copiesById = state.keepCopiesInStore
         ? state.copiesById
         : Model.copiesById
 
-      if (isIdOk && index !== null && index !== undefined) {
-        Vue.delete(state.ids, index)
+      if (isIdOk) {
         Vue.delete(state.keyedById, idToBeRemoved)
         if (copiesById.hasOwnProperty(idToBeRemoved)) {
           Vue.delete(copiesById, idToBeRemoved)
@@ -250,33 +239,9 @@ export default function makeServiceMutations() {
           Vue.delete(copiesById, id)
         }
       })
-
-      // Get indexes to remove from the ids array.
-      const mapOfIndexesToRemove = state.ids.reduce((map, id, index) => {
-        if (mapOfIdsToRemove[id]) {
-          map[index] = true
-        }
-        return map
-      }, {})
-      // Remove highest indexes first, so the indexes don't change
-      const indexesInReverseOrder = Object.keys(mapOfIndexesToRemove).sort(
-        (a, b) => {
-          if (a < b) {
-            return 1
-          } else if (a > b) {
-            return -1
-          } else {
-            return 0
-          }
-        }
-      )
-      indexesInReverseOrder.forEach(indexInIdsArray => {
-        Vue.delete(state.ids, indexInIdsArray)
-      })
     },
 
     clearAll(state) {
-      state.ids = []
       state.keyedById = {}
 
       if (state.keepCopiesInStore) {

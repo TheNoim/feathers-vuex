@@ -6,7 +6,8 @@ eslint
 import { assert } from 'chai'
 import { assertGetter, makeStore } from '../test-utils'
 import makeServiceMutations, {
-  PendingServiceMethodName, PendingIdServiceMethodName
+  PendingServiceMethodName,
+  PendingIdServiceMethodName
 } from '../../src/service-module/service-module.mutations'
 import makeServiceState from '../../src/service-module/service-module.state'
 import errors from '@feathersjs/errors'
@@ -138,22 +139,23 @@ describe('Service Module - Mutations', function () {
       }
 
       addItem(state, item1)
-      assert(state.ids.length === 1)
-      assert(state.ids[0] === 1)
+      assert(Object.values(state.keyedById).length === 1)
       assert(state.keyedById[1].test)
 
       // Add item 2
       addItem(state, item2)
-      assert(state.ids.length === 2)
-      assert(state.ids[1] === 2)
+      assert(Object.values(state.keyedById).length === 2)
       assert(state.keyedById[2].test)
 
       // Re-add item 1
       addItem(state, item1)
-      assert(state.ids.length === 2, 'still only two items in the ids array')
-      assert(state.ids[0] === 1)
+      assert(
+        Object.values(state.keyedById).length === 2,
+        'still only two items in the ids array'
+      )
+      assert(Object.values(state.keyedById)[0] === 1)
       assert(state.keyedById[1].test)
-      assert(state.ids[1] === 2)
+      assert(Object.values(state.keyedById)[1] === 2)
       assert(state.keyedById[2].test)
     })
 
@@ -169,10 +171,13 @@ describe('Service Module - Mutations', function () {
       }
       const items = [item1, item2]
       addItems(state, items)
-      assert(state.ids.length === 2, 'still only two items in the ids array')
-      assert(state.ids[0] === 1)
+      assert(
+        Object.values(state.keyedById).length === 2,
+        'still only two items in the ids array'
+      )
+      assert(Object.values(state.keyedById)[0] === 1)
       assert(state.keyedById[1].test)
-      assert(state.ids[1] === 2)
+      assert(Object.values(state.keyedById)[1] === 2)
       assert(state.keyedById[2].test)
     })
 
@@ -210,7 +215,6 @@ describe('Service Module - Mutations', function () {
       addItem(state, { _id: 1, test: true })
       removeItem(state, 1)
 
-      assert(state.ids.length === 0)
       assert(Object.keys(state.keyedById).length === 0)
     })
 
@@ -257,7 +261,6 @@ describe('Service Module - Mutations', function () {
       const itemsToRemove = [1, 2]
       removeItems(state, itemsToRemove)
 
-      assert(state.ids.length === 2, 'should have 2 ids left')
       assert(
         Object.keys(state.keyedById).length === 2,
         'should have 2 items left'
@@ -279,7 +282,6 @@ describe('Service Module - Mutations', function () {
       ]
       removeItems(state, itemsToRemove)
 
-      assert(state.ids.length === 2, 'should have 2 ids left')
       assert(
         Object.keys(state.keyedById).length === 2,
         'should have 2 items left'
@@ -333,7 +335,6 @@ describe('Service Module - Mutations', function () {
     it('clearAll', function () {
       const state = this.state
 
-      assert(state.ids.length === 0, 'initialy empty')
       assert(Object.keys(state.keyedById).length === 0, 'initialy empty')
       assert(Object.keys(state.copiesById).length === 0, 'initialy empty')
 
@@ -350,7 +351,6 @@ describe('Service Module - Mutations', function () {
 
       createCopy(state, item1._id)
 
-      assert(state.ids.length === 2, 'ids are added correctly')
       assert(
         Object.keys(state.keyedById).length === 2,
         'items are added correctly'
@@ -361,7 +361,6 @@ describe('Service Module - Mutations', function () {
       )
 
       clearAll(state)
-      assert(state.ids.length === 0, 'ids empty again')
       assert(Object.keys(state.keyedById).length === 0, 'items empty again')
       assert(Object.keys(state.copiesById).length === 0, 'clones empty again')
     })
@@ -372,7 +371,6 @@ describe('Service Module - Mutations', function () {
       // @ts-ignore
       const state = store.state.comics
 
-      assert(state.ids.length === 0, 'initialy empty')
       assert(Object.keys(state.keyedById).length === 0, 'initialy empty')
       assert(Object.keys(Comic.copiesById).length === 0, 'initialy empty')
 
@@ -388,7 +386,6 @@ describe('Service Module - Mutations', function () {
       store.commit('comics/addItems', items)
       store.commit('comics/createCopy', item1._id)
 
-      assert(state.ids.length === 2, 'ids are added correctly')
       assert(
         Object.keys(state.keyedById).length === 2,
         'items are added correctly'
@@ -400,7 +397,6 @@ describe('Service Module - Mutations', function () {
 
       store.commit('comics/clearAll')
 
-      assert(state.ids.length === 0, 'ids empty again')
       assert(Object.keys(state.keyedById).length === 0, 'items empty again')
       assert(Object.keys(Comic.copiesById).length === 0, 'clones empty again')
     })
@@ -456,8 +452,8 @@ describe('Service Module - Mutations', function () {
       updateItem(state, item1updated)
 
       assert.deepEqual(
-        [state.addOnUpsert, state.ids, state.keyedById],
-        [true, [1], { 1: { _id: 1, test: false } }]
+        [state.addOnUpsert, state.keyedById],
+        [true, { 1: { _id: 1, test: false } }]
       )
       // assert(state.keyedById[1].test === false)
     })
@@ -1601,8 +1597,8 @@ describe('Service Module - Mutations', function () {
     })
   })
 
-  describe('Per-instance Pending', function() {
-    it('setIdPending && unsetIdPending', function() {
+  describe('Per-instance Pending', function () {
+    it('setIdPending && unsetIdPending', function () {
       const state = this.state
       const methods: PendingIdServiceMethodName[] = [
         'create',

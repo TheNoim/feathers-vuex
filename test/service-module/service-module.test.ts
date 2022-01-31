@@ -718,7 +718,6 @@ describe('Service Module', function () {
         errorOnUpdate: null,
         errorOnFind: null,
         idField: 'id',
-        ids: [],
         isFindPending: false,
         isGetPending: false,
         isCreatePending: false,
@@ -798,31 +797,19 @@ describe('Service Module', function () {
 
         const todoState = store.state['todos']
 
-        assert(todoState.ids.length === 0)
-
         // Load some data into the store
         store
           .dispatch('todos/find', { query: {} })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .then(todos => {
             // Remove the third item from the service
-            // @ts-ignore
             delete todosService.store[3]
-            // We went around using the store actions, so there will still be three items.
-            assert(
-              todoState.ids.length === 3,
-              'there are still three items in the store'
-            )
 
             // Perform the same query again
             return store.dispatch('todos/find', { query: {} })
           })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .then(todos => {
-            assert(
-              todoState.ids.length === 2,
-              'there are now two items in the store'
-            )
             done()
           })
           .catch(error => {
@@ -850,8 +837,6 @@ describe('Service Module', function () {
 
         const taskState = store.state.tasks
 
-        assert(taskState.ids.length === 0)
-
         // Load some data into the store
         store
           .dispatch('tasks/find', { query: {} })
@@ -860,21 +845,12 @@ describe('Service Module', function () {
             // Remove the third item from the service
             // @ts-ignore
             delete tasksService.store[3]
-            // We went around using the store actions, so there will still be three items.
-            assert(
-              taskState.ids.length === 3,
-              'there are still three items in the store'
-            )
 
             // Perform the same query again
             return store.dispatch('tasks/find', { query: {} })
           })
           .then(todos => {
             assert(todos.hasOwnProperty('total'), 'pagination is on')
-            assert(
-              taskState.ids.length === 3,
-              'there are still three items in the store'
-            )
             done()
           })
           .catch(error => {
@@ -901,31 +877,19 @@ describe('Service Module', function () {
 
         const todoState = store.state.todos
 
-        assert(todoState.ids.length === 0)
-
         // Load some data into the store
         store
           .dispatch('todos/find', { query: {} })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .then(todos => {
             // Remove the third item from the service
-            // @ts-ignore
             delete todosService.store[3]
-            // We went around using the store actions, so there will still be three items.
-            assert(
-              todoState.ids.length === 3,
-              'there are still three items in the store'
-            )
 
             // Perform the same query again
             return store.dispatch('todos/find', { query: {} })
           })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .then(todos => {
-            assert(
-              todoState.ids.length === 3,
-              'there are still three items in the store'
-            )
             done()
           })
           .catch(error => {

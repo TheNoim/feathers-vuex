@@ -6,8 +6,17 @@ eslint
 import fastCopy from 'fast-copy'
 import { getId } from '../utils'
 import { Service } from '@feathersjs/feathers'
+import { MakeServicePluginOptions } from './types'
 
-export default function makeServiceActions(service: Service<any>) {
+interface serviceAndOptions {
+  service: Service<any>
+  options: MakeServicePluginOptions
+}
+
+export default function makeServiceActions({
+  service,
+  options
+}: serviceAndOptions) {
   const serviceActions = {
     find({ commit, dispatch }, params) {
       params = params || {}
@@ -167,13 +176,13 @@ export default function makeServiceActions(service: Service<any>) {
 
       params = fastCopy(params)
 
-      if (service.FeathersVuexModel && (!params || !params.data)) {
-        data = service.FeathersVuexModel.diffOnPatch(data)
+      if (options.Model && (!params || !params.data)) {
+        data = options.Model.diffOnPatch(data)
       }
       if (params && params.data) {
         data = params.data
       }
-      
+
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         // skip request if empty data
         return Promise.resolve(state.keyedById[id])
@@ -298,7 +307,7 @@ export default function makeServiceActions(service: Service<any>) {
       return response
     },
 
-    addOrUpdateList({ state, commit }, response) {
+    addOrUpdateList({ state, getters, commit }, response) {
       const list = response.data || response
       const isPaginated = response.hasOwnProperty('total')
       const toAdd = []
@@ -319,7 +328,7 @@ export default function makeServiceActions(service: Service<any>) {
 
       if (!isPaginated && !disableRemove) {
         // Find IDs from the state which are not in the list
-        state.ids.forEach(id => {
+        getters.ids.forEach(id => {
           if (!list.some(item => getId(item, idField) === id)) {
             toRemove.push(state.keyedById[id])
           }
@@ -327,9 +336,9 @@ export default function makeServiceActions(service: Service<any>) {
         commit('removeItems', toRemove) // commit removal
       }
 
-      if (service.FeathersVuexModel) {
+      if (options.Model) {
         toAdd.forEach((item, index) => {
-          toAdd[index] = new service.FeathersVuexModel(item, { commit: false })
+          toAdd[index] = new options.Model(item, { commit: false })
         })
       }
 
@@ -352,11 +361,8 @@ export default function makeServiceActions(service: Service<any>) {
 
       const isIdOk = id !== null && id !== undefined
 
-      if (
-        service.FeathersVuexModel &&
-        !(item instanceof service.FeathersVuexModel)
-      ) {
-        item = new service.FeathersVuexModel(item, { commit: false })
+      if (options.Model && !(item instanceof options.Model)) {
+        item = new options.Model(item, { commit: false })
       }
 
       if (isIdOk) {
