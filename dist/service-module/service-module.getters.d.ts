@@ -2,7 +2,12 @@ import { ServiceState } from '..';
 import { Id } from '@feathersjs/feathers';
 export default function makeServiceGetters(): {
     list: (state: any) => unknown[];
-    find: (state: any) => (_params: any) => {
+    temps: (state: any) => unknown[];
+    itemsAndTemps: (state: any, getters: any) => any;
+    itemsAndClones: (state: any, getters: any) => any;
+    itemsTempsAndClones: (state: any, getters: any) => any;
+    operators: (state: any) => string[];
+    find: (state: any, getters: any) => (_params: any) => {
         total: any;
         limit: any;
         skip: any;

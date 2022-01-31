@@ -27,24 +27,47 @@ const getCopiesById = ({
 export default function makeServiceGetters() {
   return {
     list: (state) => Object.values(state.keyedById),
-    find: (state) => (_params) => {
-      const params = unref(_params) || {}
-      const { paramsForServer, whitelist, keyedById, idField, tempsById } =
-        state
-      const q = _omit(params.query || {}, paramsForServer)
-      const { query, filters } = filterQuery(q, {
-        operators: additionalOperators.concat(whitelist)
+    temps: (state) => Object.values(state.keyedById),
+    itemsAndTemps: (state, getters) => getters.list.concat(getters.temps),
+    itemsAndClones: (state, getters) => {
+      const items = getters.list
+      const copiesById = getCopiesById(state)
+      return items.map((item) => {
+        const id = item[state.idField]
+        if (id == null) {
+          return item
+        }
+        return copiesById[id] || item
       })
-      let values = Object.values(keyedById)
-      if (params.temps) {
-        values.push(...Object.values(tempsById))
+    },
+    itemsTempsAndClones: (state, getters) => {
+      const { itemsAndTemps } = getters
+      const copiesById = getCopiesById(state)
+      return itemsAndTemps.map((item) => {
+        const id = item[state.idField] | item[state.tempIdField]
+        if (id == null) {
+          return item
+        }
+        return copiesById[id] || item
+      })
+    },
+    operators: (state) => additionalOperators.concat(state.whitelist),
+    find: (state, getters) => (_params) => {
+      const params = unref(_params) || {}
+      const { paramsForServer } = state
+      const q = _omit(params.query || {}, paramsForServer)
+      const { query, filters } = filterQuery(q, { operators: state.operators })
+      let values
+      if (!params.temps && !params.copies) {
+        values = getters.list
+      } else if (params.temps && params.copies) {
+        values = getters.itemsTempsAndClones
+      } else if (!params.temps) {
+        values = getters.itemsAndClones
+      } else {
+        values = getters.itemsAndTemps
       }
       values = values.filter(sift(query))
-      if (params.copies) {
-        const copiesById = getCopiesById(state)
-        // replace keyedById value with existing clone value
-        values = values.map((value) => copiesById[value[idField]] || value)
-      }
       const total = values.length
       if (filters.$sort !== undefined) {
         values.sort(sorter(filters.$sort))

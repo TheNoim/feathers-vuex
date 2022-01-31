@@ -6,7 +6,12 @@ export default function makeServiceModule(service: Service<any>, options: MakeSe
     state: import("./service-module.state").ServiceStateExclusiveDefaults & Partial<MakeServicePluginOptions>;
     getters: {
         list: (state: any) => unknown[];
-        find: (state: any) => (_params: any) => {
+        temps: (state: any) => unknown[];
+        itemsAndTemps: (state: any, getters: any) => any;
+        itemsAndClones: (state: any, getters: any) => any;
+        itemsTempsAndClones: (state: any, getters: any) => any;
+        operators: (state: any) => string[];
+        find: (state: any, getters: any) => (_params: any) => {
             total: any;
             limit: any;
             skip: any;
