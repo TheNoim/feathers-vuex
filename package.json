@@ -34,6 +34,7 @@
   },
   "scripts": {
     "prepublish": "npm run compile",
+    "postinstall": "npm run compile",
     "publish": "git push origin --tags && git push origin",
     "release:pre": "npm version prerelease && npm publish --tag pre",
     "release:patch": "npm version patch && npm publish",
