@@ -101,6 +101,6 @@ export declare function createRelatedInstance({ item, Model, idField, store }: {
     storedModel: any;
 };
 export declare function isBaseModelInstance(item: any): boolean;
-export declare function mergeWithAccessors(dest: any, source: any, blacklist?: string[]): any;
+export declare function mergeWithAccessors(dest: any, source: any, _blacklist?: any): any;
 export declare function checkNamespace(namespace: any, item: any, debug: any): boolean;
 export declare function assignIfNotPresent(Model: any, props: any): void;
