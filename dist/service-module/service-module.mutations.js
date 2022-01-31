@@ -22,7 +22,10 @@ export default function makeServiceMutations() {
     const { serverAlias, idField, tempIdField, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
     const BaseModel = _get(models, [serverAlias, 'BaseModel'])
-    for (let item of items) {
+    const keyedById = {}
+    const tempsById = {}
+    for (let i = 0, n = items.length; i < n; i++) {
+      let item = items[i]
       const id = getId(item, idField)
       const isTemp = id === null || id === undefined
       // If the response contains a real id, remove isTemp
@@ -38,8 +41,16 @@ export default function makeServiceMutations() {
           tempId = assignTempId(state, item)
         }
         item.__isTemp = true
+        if (state.tempsById[tempId] === item) {
+          console.log('can skip Vue.set', state)
+        }
         Vue.set(state.tempsById, tempId, item)
       } else {
+        if (state.keyedById[id] === item) {
+          console.log('can skip Vue.set', state)
+        } else {
+          console.log(false)
+        }
         Vue.set(state.keyedById, id, item)
       }
     }
@@ -48,7 +59,8 @@ export default function makeServiceMutations() {
     const { idField, replaceItems, addOnUpsert, serverAlias, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
     const BaseModel = _get(models, [state.serverAlias, 'BaseModel'])
-    for (let item of items) {
+    for (let i = 0, n = items.length; i < n; i++) {
+      let item = items[i]
       const id = getId(item, idField)
       // If the response contains a real id, remove isTemp
       if (id != null) {

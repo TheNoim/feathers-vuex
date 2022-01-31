@@ -53,7 +53,6 @@ export default function makeServiceGetters() {
     },
     operators: (state) => additionalOperators.concat(state.whitelist),
     find: (state, getters) => (_params) => {
-      console.log("test")
       const params = unref(_params) || {}
       const { paramsForServer } = state
       const q = _omit(params.query || {}, paramsForServer)

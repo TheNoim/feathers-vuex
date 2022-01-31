@@ -37,7 +37,7 @@ export declare function readCookie(cookies: any, name: any): any;
 export declare function payloadIsValid(payload: any): boolean;
 export declare const isNode: boolean;
 export declare const isBrowser: boolean;
-export declare function getValidPayloadFromToken(token: any): unknown;
+export declare function getValidPayloadFromToken(token: any): any;
 export declare const initAuth: (options: any) => any;
 /**
  * run de BaseModel hydration on client for each api
