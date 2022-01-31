@@ -62,17 +62,32 @@ export default function makeServiceMutations() {
           tempId = assignTempId(state, item)
         }
         item.__isTemp = true
-        if (state.tempsById[tempId] === item) {
-          console.log("can skip Vue.set", state)
-        }
-        Vue.set(state.tempsById, tempId, item)
+
+        tempsById[tempId] = item;
       } else {
-        if (state.keyedById[id] === item) {
-          console.log("can skip Vue.set", state)
-        } else {
-          console.log(false);
-        }
-        Vue.set(state.keyedById, id, item)
+        keyedById[id] = item;
+      }
+    }
+
+    const lengthKeyed = Object.keys(keyedById).length
+
+    if (lengthKeyed) {
+      if (lengthKeyed === 1) {
+        const [[id, item]] = Object.entries(keyedById);
+        Vue.set(state.keyedById, id, item);
+      } else {
+        Vue.set(state, "keyedById", { ...state.keyedById, ...keyedById })
+      }
+    }
+
+    const lengthTemps = Object.keys(tempsById).length
+
+    if (lengthTemps) {
+      if (lengthTemps === 1) {
+        const [[id, item]] = Object.entries(tempsById);
+        Vue.set(state.tempsById, id, item);
+      } else {
+        Vue.set(state, "tempsById", { ...state.tempsById, ...tempsById })
       }
     }
   }

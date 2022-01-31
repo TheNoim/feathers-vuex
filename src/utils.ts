@@ -433,16 +433,20 @@ export function isBaseModelInstance(item) {
   })
 }
 
-export function mergeWithAccessors(
-  dest,
-  source,
-  blacklist = ['__isClone', '__ob__']
-) {
+const defaultBlacklist = ['__isClone', '__ob__']
+
+export function mergeWithAccessors(dest, source, _blacklist?) {
+  const blacklist = _blacklist || defaultBlacklist
   const sourceProps = Object.getOwnPropertyNames(source)
-  const destProps = Object.getOwnPropertyNames(dest)
   const sourceIsVueObservable = sourceProps.includes('__ob__')
-  const destIsVueObservable = destProps.includes('__ob__')
-  sourceProps.forEach(key => {
+  const destIsVueObservable = !!Object.getOwnPropertyDescriptor(dest, '__ob__')
+  for (let i = 0, n = sourceProps.length; i < n; i++) {
+    const key = sourceProps[i]
+
+    if (blacklist.includes(key)) {
+      continue
+    }
+
     const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
     const destDesc = Object.getOwnPropertyDescriptor(dest, key)
 
@@ -460,8 +464,8 @@ export function mergeWithAccessors(
 
     // If the destination is not writable, return. Also ignore blacklisted keys.
     // Must explicitly check if writable is false
-    if ((destDesc && destDesc.writable === false) || blacklist.includes(key)) {
-      return
+    if (destDesc && destDesc.writable === false) {
+      continue
     }
 
     // Handle Vue observable objects
@@ -490,7 +494,7 @@ export function mergeWithAccessors(
           }
         }
       }
-      return
+      continue
     }
 
     // Handle defining accessors
@@ -499,12 +503,12 @@ export function mergeWithAccessors(
       typeof sourceDesc.set === 'function'
     ) {
       Object.defineProperty(dest, key, sourceDesc)
-      return
+      continue
     }
 
     // Do not attempt to overwrite a getter in the dest object
     if (destDesc && typeof destDesc.get === 'function') {
-      return
+      continue
     }
 
     // Assign values
@@ -515,7 +519,8 @@ export function mergeWithAccessors(
       value = fastCopy(sourceDesc.value)
     }
     dest[key] = value || sourceDesc.value
-  })
+  }
+
   return dest
 }
 
