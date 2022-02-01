@@ -61,10 +61,13 @@ export default function makeServiceGetters() {
     find: (state, getters) => _params => {
       const params = unref(_params) || {}
 
-      const { paramsForServer } = state
-      const q = _omit(params.query || {}, paramsForServer)
+      const q = !state.paramsForServer.length
+        ? params.query || {}
+        : _omit(params.query || {}, state.paramsForServer)
 
-      const { query, filters } = filterQuery(q, { operators: state.operators })
+      const { query, filters } = filterQuery(q, {
+        operators: getters.operators
+      })
 
       let values
       if (!params.temps && !params.copies) {
