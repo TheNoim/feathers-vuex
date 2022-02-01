@@ -11,7 +11,7 @@ import _isObject from 'lodash/isObject'
 import _trim from 'lodash/trim'
 import _omit from 'lodash/omit'
 import ObjectID from 'bson-objectid'
-import { globalModels as models } from './service-module/global-models'
+import { baseModels } from './service-module/global-models'
 import stringify from 'fast-json-stable-stringify'
 import { Service } from '@feathersjs/feathers'
 
@@ -263,18 +263,6 @@ export function getModelName(Model) {
   return name
 }
 
-export function registerModel(Model, globalModels, apiPrefix, servicePath) {
-  const modelName = getModelName(Model)
-  const path = apiPrefix ? `${apiPrefix}.${modelName}` : modelName
-
-  setByDot(globalModels, path, Model)
-  globalModels.byServicePath[servicePath] = Model
-  return {
-    path,
-    name: modelName
-  }
-}
-
 export function getServicePrefix(servicePath) {
   const parts = servicePath.split('/')
   let name = parts[parts.length - 1]
@@ -427,10 +415,7 @@ export function createRelatedInstance({ item, Model, idField, store }) {
 }
 
 export function isBaseModelInstance(item) {
-  const baseModels = Object.keys(models).map(alias => models[alias].BaseModel)
-  return !!baseModels.find(BaseModel => {
-    return item instanceof BaseModel
-  })
+  return !!baseModels.some(BaseModel => item instanceof BaseModel)
 }
 
 const defaultBlacklist = ['__isClone', '__ob__']

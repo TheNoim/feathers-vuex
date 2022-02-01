@@ -11,6 +11,8 @@ import { FeathersVuexOptions } from './types'
  */
 export const globalModels: { [k: string]: any } = {}
 
+export let baseModels: any[] = []
+
 /**
  * prepareAddModel wraps options in a closure around addModel
  * @param options
@@ -23,6 +25,9 @@ export function prepareAddModel(options: FeathersVuexOptions) {
       byServicePath: {}
     }
     const name = Model.modelName || Model.name
+    if (name === 'BaseModel') {
+      baseModels.push(Model)
+    }
     if (globalModels[serverAlias][name] && options.debug) {
       // eslint-disable-next-line no-console
       console.error(`Overwriting Model: models[${serverAlias}][${name}].`)
@@ -42,4 +47,6 @@ export function clearModels() {
 
     delete globalModels[key]
   })
+
+  baseModels = []
 }

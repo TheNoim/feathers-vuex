@@ -10,7 +10,10 @@ import FeathersVuexInputWrapper from './FeathersVuexInputWrapper'
 import FeathersVuexPagination from './FeathersVuexPagination'
 import makeFindMixin from './make-find-mixin'
 import makeGetMixin from './make-get-mixin'
-import { globalModels as models } from './service-module/global-models'
+import {
+  globalModels as models,
+  baseModels
+} from './service-module/global-models'
 import { clients, addClient } from './service-module/global-clients'
 import makeBaseModel from './service-module/make-base-model'
 import prepareMakeServicePlugin from './service-module/make-service-plugin'
@@ -102,6 +105,7 @@ export {
   makeFindMixin,
   makeGetMixin,
   models,
+  baseModels,
   clients,
   useFind,
   useGet,
