@@ -33,7 +33,7 @@ const getCopiesById = ({
 export default function makeServiceGetters() {
   return {
     list: state => Object.values(state.keyedById),
-    temps: state => Object.values(state.keyedById),
+    temps: state => Object.values(state.tempsById),
     itemsAndTemps: (state, getters) => getters.list.concat(getters.temps),
     itemsAndClones: (state, getters) => {
       const items = getters.list

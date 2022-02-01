@@ -127,7 +127,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const hasValidId = id != null
       const state = _state
 
-      if (state?.replaceItems !== true) {
+      if (state.replaceItems !== true) {
         const existingItem =
           hasValidId && !options.clone ? state.keyedById[id] : null
 
