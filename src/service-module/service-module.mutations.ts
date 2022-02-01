@@ -35,20 +35,20 @@ export type PendingIdServiceMethodName = Exclude<
 export default function makeServiceMutations() {
   function addItems(state, items) {
     const { serverAlias, idField, tempIdField, modelName } = state
-    const Model = _get(models, [serverAlias, modelName])
-    const BaseModel = _get(models, [serverAlias, 'BaseModel'])
+    const Model = models[serverAlias][modelName]
+    const BaseModel = models[serverAlias]['BaseModel']
 
     const keyedById = {}
     const tempsById = {}
 
     for (let i = 0, n = items.length; i < n; i++) {
-      let item = items[i];
+      let item = items[i]
 
       const id = getId(item, idField)
-      const isTemp = id === null || id === undefined
+      const isTemp = id == null
 
       // If the response contains a real id, remove isTemp
-      if (id != null) {
+      if (!isTemp && '__isTemp' in item) {
         delete item.__isTemp
       }
 
@@ -63,9 +63,9 @@ export default function makeServiceMutations() {
         }
         item.__isTemp = true
 
-        tempsById[tempId] = item;
+        tempsById[tempId] = item
       } else {
-        keyedById[id] = item;
+        keyedById[id] = item
       }
     }
 
@@ -73,10 +73,10 @@ export default function makeServiceMutations() {
 
     if (lengthKeyed) {
       if (lengthKeyed === 1) {
-        const [[id, item]] = Object.entries(keyedById);
-        Vue.set(state.keyedById, id, item);
+        const [[id, item]] = Object.entries(keyedById)
+        Vue.set(state.keyedById, id, item)
       } else {
-        Vue.set(state, "keyedById", { ...state.keyedById, ...keyedById })
+        Vue.set(state, 'keyedById', { ...state.keyedById, ...keyedById })
       }
     }
 
@@ -84,10 +84,10 @@ export default function makeServiceMutations() {
 
     if (lengthTemps) {
       if (lengthTemps === 1) {
-        const [[id, item]] = Object.entries(tempsById);
-        Vue.set(state.tempsById, id, item);
+        const [[id, item]] = Object.entries(tempsById)
+        Vue.set(state.tempsById, id, item)
       } else {
-        Vue.set(state, "tempsById", { ...state.tempsById, ...tempsById })
+        Vue.set(state, 'tempsById', { ...state.tempsById, ...tempsById })
       }
     }
   }
@@ -147,8 +147,7 @@ export default function makeServiceMutations() {
   }
 
   function mergeInstance(state, item) {
-    const { idField } = state
-    const id = getId(item, idField)
+    const id = getId(item, state.idField)
     const existingItem = state.keyedById[id]
     if (existingItem) {
       mergeWithAccessors(existingItem, item)

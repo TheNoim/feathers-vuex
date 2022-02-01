@@ -19,8 +19,7 @@ export default function makeServiceActions({
 }: serviceAndOptions) {
   const serviceActions = {
     find({ commit, dispatch }, params) {
-      params = params || {}
-      params = fastCopy(params)
+      params = (params && fastCopy(params)) || {}
 
       // For working with client-side services, paginate.default must be truthy.
       if (params.paginate === true) {
@@ -44,14 +43,12 @@ export default function makeServiceActions({
       let skipRequestIfExists
 
       if (Array.isArray(args)) {
-        id = args[0]
-        params = args[1] || {}
+        ;[id, params] = args
+        params = (params && fastCopy(params)) || {}
       } else {
         id = args
         params = {}
       }
-
-      params = fastCopy(params)
 
       if ('skipRequestIfExists' in params) {
         skipRequestIfExists = params.skipRequestIfExists
@@ -91,21 +88,18 @@ export default function makeServiceActions({
       let tempIds
 
       if (Array.isArray(dataOrArray)) {
-        data = dataOrArray[0]
-        params = dataOrArray[1]
+        ;[data, params] = dataOrArray
+        params = (params && fastCopy(params)) || {}
       } else {
         data = dataOrArray
+        params = {}
       }
-
-      params = fastCopy(params)
 
       if (Array.isArray(data)) {
         tempIds = data.map(i => i[tempIdField])
       } else {
         tempIds = [data[tempIdField]] // Array of tempIds
       }
-
-      params = params || {}
 
       commit('setPending', 'create')
       commit('setIdPending', { method: 'create', id: tempIds })
@@ -148,7 +142,7 @@ export default function makeServiceActions({
       commit('setPending', 'update')
       commit('setIdPending', { method: 'update', id })
 
-      params = fastCopy(params)
+      params = params && fastCopy(params)
 
       return service
         .update(id, data, params)
@@ -174,7 +168,7 @@ export default function makeServiceActions({
       commit('setPending', 'patch')
       commit('setIdPending', { method: 'patch', id })
 
-      params = fastCopy(params)
+      params = params && fastCopy(params)
 
       if (options.Model && (!params || !params.data)) {
         data = options.Model.diffOnPatch(data)
@@ -209,14 +203,12 @@ export default function makeServiceActions({
       let params
 
       if (Array.isArray(idOrArray)) {
-        id = idOrArray[0]
-        params = idOrArray[1]
+        ;[id, params] = idOrArray
+        params = (params && fastCopy(params)) || {}
       } else {
         id = idOrArray
+        params = {}
       }
-
-      params = params || {}
-      params = fastCopy(params)
 
       commit('setPending', 'remove')
       commit('setIdPending', { method: 'remove', id })
@@ -240,8 +232,7 @@ export default function makeServiceActions({
 
   const actions = {
     count({ dispatch }, params) {
-      params = params || {}
-      params = fastCopy(params)
+      params = (params && fastCopy(params)) || {}
 
       if (!params.query) {
         throw 'params must contain a query-object'
@@ -359,7 +350,7 @@ export default function makeServiceActions({
       const { idField } = state
       const id = getId(item, idField)
 
-      const isIdOk = id !== null && id !== undefined
+      const isIdOk = id != null
 
       if (options.Model && !(item instanceof options.Model)) {
         item = new options.Model(item, { commit: false })
