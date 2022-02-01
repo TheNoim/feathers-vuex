@@ -48,16 +48,14 @@ export default function makeBaseModel(options) {
       const id = getId(data, idField)
       const hasValidId = id != null
       const state = _state
-      if (
-        (state === null || state === void 0 ? void 0 : state.replaceItems) !==
-        true
-      ) {
+      if (state.replaceItems !== true) {
         const existingItem =
           hasValidId && !options.clone ? state.keyedById[id] : null
         // If it already exists, update the original and return
         if (existingItem) {
           data = setupInstance.call(this, data, modelSetupContext) || data
-          _commit.call(this.constructor, 'mergeInstance', data)
+          mergeWithAccessors(existingItem, data)
+          //_commit.call(this.constructor, 'mergeInstance', data)
           return existingItem
         }
       }
@@ -72,11 +70,12 @@ export default function makeBaseModel(options) {
         // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
         const existingClone = copiesById[id] || copiesById[tempId]
         if (existingClone) {
+          mergeWithAccessors(existingClone, data)
           // This must be done in a mutation to avoid Vuex errors.
-          _commit.call(this.constructor, 'merge', {
-            dest: existingClone,
-            source: data
-          })
+          // _commit.call(this.constructor, 'merge', {
+          //   dest: existingClone,
+          //   source: data
+          // })
           return existingClone
         }
       }
