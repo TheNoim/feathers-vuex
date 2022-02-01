@@ -134,7 +134,8 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
         // If it already exists, update the original and return
         if (existingItem) {
           data = setupInstance.call(this, data, modelSetupContext) || data
-          _commit.call(this.constructor, 'mergeInstance', data)
+          mergeWithAccessors(existingItem, data)
+          //_commit.call(this.constructor, 'mergeInstance', data)
           return existingItem
         }
       }
@@ -154,11 +155,12 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
         const existingClone = copiesById[id] || copiesById[tempId]
 
         if (existingClone) {
+          mergeWithAccessors(existingClone, data)
           // This must be done in a mutation to avoid Vuex errors.
-          _commit.call(this.constructor, 'merge', {
-            dest: existingClone,
-            source: data
-          })
+          // _commit.call(this.constructor, 'merge', {
+          //   dest: existingClone,
+          //   source: data
+          // })
           return existingClone
         }
       }
