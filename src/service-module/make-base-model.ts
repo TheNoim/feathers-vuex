@@ -71,8 +71,23 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       return data
     }
 
+    private static modelSetupContext: {
+      models: GlobalModels
+      store: Store<StoreState>
+    }
+
     // Monkey patched onto the Model class in `makeServicePlugin()`
-    public static store: Store<StoreState>
+    private static _store: Store<StoreState>
+    public static get store() {
+      return this._store
+    }
+    public static set store(storeToSet) {
+      this._store = storeToSet
+      this.modelSetupContext = {
+        models: globalModels,
+        store: storeToSet
+      }
+    }
 
     public static idField: string = options.idField
     public static tempIdField: string = options.tempIdField
@@ -100,52 +115,52 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
       const {
         store,
-        keepCopiesInStore,
-        copiesById: copiesByIdOnModel,
-        models,
         instanceDefaults,
         idField,
         tempIdField,
         setupInstance,
-        getFromStore,
-        namespace,
-        _commit
+        _commit,
+        _state,
+        modelSetupContext
       } = this.constructor as typeof BaseModel
       const id = getId(data, idField)
-      const hasValidId = id !== null && id !== undefined
-      const tempId =
-        data && data.hasOwnProperty(tempIdField) ? data[tempIdField] : undefined
-      const hasValidTempId = tempId !== null && tempId !== undefined
-      const copiesById = keepCopiesInStore
-        ? store?.state[namespace].copiesById
-        : copiesByIdOnModel
+      const hasValidId = id != null
+      const state = _state
 
-      if (store?.state?.[namespace]?.replaceItems !== true) {
+      if (state?.replaceItems !== true) {
         const existingItem =
-          hasValidId && !options.clone
-            ? getFromStore.call(this.constructor, id)
-            : null
+          hasValidId && !options.clone ? state.keyedById[id] : null
 
         // If it already exists, update the original and return
         if (existingItem) {
-          data = setupInstance.call(this, data, { models, store }) || data
+          data = setupInstance.call(this, data, modelSetupContext) || data
           _commit.call(this.constructor, 'mergeInstance', data)
           return existingItem
         }
       }
 
-      // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
-      const existingClone =
-        (hasValidId || hasValidTempId) && options.clone
-          ? copiesById[id] || copiesById[tempId]
-          : null
-      if (existingClone) {
-        // This must be done in a mutation to avoid Vuex errors.
-        _commit.call(this.constructor, 'merge', {
-          dest: existingClone,
-          source: data
-        })
-        return existingClone
+      const tempId = data[tempIdField] || undefined
+      const hasValidTempId = tempId != null
+
+      if (options.clone && (hasValidId || hasValidTempId)) {
+        const { keepCopiesInStore, copiesById: copiesByIdOnModel } = this
+          .constructor as typeof BaseModel
+
+        const copiesById = keepCopiesInStore
+          ? state.copiesById
+          : copiesByIdOnModel
+
+        // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
+        const existingClone = copiesById[id] || copiesById[tempId]
+
+        if (existingClone) {
+          // This must be done in a mutation to avoid Vuex errors.
+          _commit.call(this.constructor, 'merge', {
+            dest: existingClone,
+            source: data
+          })
+          return existingClone
+        }
       }
 
       // Mark as a clone
@@ -159,7 +174,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       // Setup instanceDefaults
       if (instanceDefaults && typeof instanceDefaults === 'function') {
         const defaults =
-          instanceDefaults.call(this, data, { models, store }) || data
+          instanceDefaults.call(this, data, modelSetupContext) || data
         mergeWithAccessors(this, defaults)
       }
 
@@ -168,7 +183,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       if (options.merge !== false) {
         mergeWithAccessors(
           this,
-          setupInstance.call(this, data, { models, store }) || data
+          setupInstance.call(this, data, modelSetupContext) || data
         )
       }
 
@@ -241,6 +256,11 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
     public static getFromStore(id: Id, params?: Params) {
       return this._getters('get', id, params)
+    }
+
+    public static get _state() {
+      const { namespace, store } = this
+      return store.state[namespace]
     }
 
     /**
