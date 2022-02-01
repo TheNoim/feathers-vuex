@@ -32,65 +32,53 @@ export default function makeBaseModel(options) {
   }
   class BaseModel {
     constructor(data, options) {
-      var _a, _b
       // You have to pass at least an empty object to get a tempId.
       data = data || {}
       options = Object.assign({}, defaultOptions, options)
       const {
         store,
-        keepCopiesInStore,
-        copiesById: copiesByIdOnModel,
-        models,
         instanceDefaults,
         idField,
         tempIdField,
         setupInstance,
-        getFromStore,
-        namespace,
-        _commit
+        _commit,
+        _state,
+        modelSetupContext
       } = this.constructor
       const id = getId(data, idField)
-      const hasValidId = id !== null && id !== undefined
-      const tempId =
-        data && data.hasOwnProperty(tempIdField) ? data[tempIdField] : undefined
-      const hasValidTempId = tempId !== null && tempId !== undefined
-      const copiesById = keepCopiesInStore
-        ? store === null || store === void 0
-          ? void 0
-          : store.state[namespace].copiesById
-        : copiesByIdOnModel
+      const hasValidId = id != null
+      const state = _state
       if (
-        ((_b =
-          (_a = store === null || store === void 0 ? void 0 : store.state) ===
-            null || _a === void 0
-            ? void 0
-            : _a[namespace]) === null || _b === void 0
-          ? void 0
-          : _b.replaceItems) !== true
+        (state === null || state === void 0 ? void 0 : state.replaceItems) !==
+        true
       ) {
         const existingItem =
-          hasValidId && !options.clone
-            ? getFromStore.call(this.constructor, id)
-            : null
+          hasValidId && !options.clone ? state.keyedById[id] : null
         // If it already exists, update the original and return
         if (existingItem) {
-          data = setupInstance.call(this, data, { models, store }) || data
+          data = setupInstance.call(this, data, modelSetupContext) || data
           _commit.call(this.constructor, 'mergeInstance', data)
           return existingItem
         }
       }
-      // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
-      const existingClone =
-        (hasValidId || hasValidTempId) && options.clone
-          ? copiesById[id] || copiesById[tempId]
-          : null
-      if (existingClone) {
-        // This must be done in a mutation to avoid Vuex errors.
-        _commit.call(this.constructor, 'merge', {
-          dest: existingClone,
-          source: data
-        })
-        return existingClone
+      const tempId = data[tempIdField] || undefined
+      const hasValidTempId = tempId != null
+      if (options.clone && (hasValidId || hasValidTempId)) {
+        const { keepCopiesInStore, copiesById: copiesByIdOnModel } =
+          this.constructor
+        const copiesById = keepCopiesInStore
+          ? state.copiesById
+          : copiesByIdOnModel
+        // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
+        const existingClone = copiesById[id] || copiesById[tempId]
+        if (existingClone) {
+          // This must be done in a mutation to avoid Vuex errors.
+          _commit.call(this.constructor, 'merge', {
+            dest: existingClone,
+            source: data
+          })
+          return existingClone
+        }
       }
       // Mark as a clone
       if (options.clone) {
@@ -102,7 +90,7 @@ export default function makeBaseModel(options) {
       // Setup instanceDefaults
       if (instanceDefaults && typeof instanceDefaults === 'function') {
         const defaults =
-          instanceDefaults.call(this, data, { models, store }) || data
+          instanceDefaults.call(this, data, modelSetupContext) || data
         mergeWithAccessors(this, defaults)
       }
       // Handles Vue objects or regular ones. We can't simply assign or return
@@ -110,7 +98,7 @@ export default function makeBaseModel(options) {
       if (options.merge !== false) {
         mergeWithAccessors(
           this,
-          setupInstance.call(this, data, { models, store }) || data
+          setupInstance.call(this, data, modelSetupContext) || data
         )
       }
       // Add the item to the store
@@ -129,6 +117,16 @@ export default function makeBaseModel(options) {
     }
     static diffOnPatch(data) {
       return data
+    }
+    static get store() {
+      return this._store
+    }
+    static set store(storeToSet) {
+      this._store = storeToSet
+      this.modelSetupContext = {
+        models: globalModels,
+        store: storeToSet
+      }
     }
     /**
      * Calls `getter`, passing this model's ID as the parameter
@@ -183,6 +181,10 @@ export default function makeBaseModel(options) {
     }
     static getFromStore(id, params) {
       return this._getters('get', id, params)
+    }
+    static get _state() {
+      const { namespace, store } = this
+      return store.state[namespace]
     }
     /**
      * An alias for store.getters. Can only call function-based getters, since
