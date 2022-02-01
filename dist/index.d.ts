@@ -5,7 +5,7 @@ import FeathersVuexInputWrapper from './FeathersVuexInputWrapper';
 import FeathersVuexPagination from './FeathersVuexPagination';
 import makeFindMixin from './make-find-mixin';
 import makeGetMixin from './make-get-mixin';
-import { globalModels as models } from './service-module/global-models';
+import { globalModels as models, baseModels } from './service-module/global-models';
 import { clients } from './service-module/global-clients';
 import useFind from './useFind';
 import useGet from './useGet';
@@ -28,4 +28,4 @@ export default function feathersVuex(feathers: any, options: FeathersVuexOptions
         [k: string]: any;
     };
 };
-export { initAuth, hydrateApi, FeathersVuexFind, FeathersVuexGet, FeathersVuexFormWrapper, FeathersVuexInputWrapper, FeathersVuexPagination, FeathersVuex, makeFindMixin, makeGetMixin, models, clients, useFind, useGet, AuthState, Id, Model, ModelStatic, ModelSetupContext, ServiceState, FeathersVuexGlobalModels, FeathersVuexStoreState };
+export { initAuth, hydrateApi, FeathersVuexFind, FeathersVuexGet, FeathersVuexFormWrapper, FeathersVuexInputWrapper, FeathersVuexPagination, FeathersVuex, makeFindMixin, makeGetMixin, models, baseModels, clients, useFind, useGet, AuthState, Id, Model, ModelStatic, ModelSetupContext, ServiceState, FeathersVuexGlobalModels, FeathersVuexStoreState };

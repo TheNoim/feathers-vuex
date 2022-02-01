@@ -61,10 +61,6 @@ export declare function assignTempId(state: any, item: any): string;
  */
 export declare function getId(item: any, idField?: any): any;
 export declare function getModelName(Model: any): any;
-export declare function registerModel(Model: any, globalModels: any, apiPrefix: any, servicePath: any): {
-    path: any;
-    name: any;
-};
 export declare function getServicePrefix(servicePath: any): any;
 export declare function getServiceCapitalization(servicePath: any): any;
 export declare function updateOriginal(original: any, newData: any): void;

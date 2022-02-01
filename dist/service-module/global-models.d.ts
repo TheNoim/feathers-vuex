@@ -5,6 +5,7 @@ import { FeathersVuexOptions } from './types';
 export declare const globalModels: {
     [k: string]: any;
 };
+export declare let baseModels: any[];
 /**
  * prepareAddModel wraps options in a closure around addModel
  * @param options
