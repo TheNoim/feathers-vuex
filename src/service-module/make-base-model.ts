@@ -488,5 +488,5 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
   const BaseModelEventEmitter = BaseModel
   assertIsEventEmitter(BaseModelEventEmitter)
-  return (BaseModelEventEmitter as unknown) as ModelStatic
+  return BaseModelEventEmitter as unknown as ModelStatic
 }

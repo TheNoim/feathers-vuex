@@ -327,11 +327,11 @@ export default function makeServiceActions({
         commit('removeItems', toRemove) // commit removal
       }
 
-      if (options.Model) {
-        toAdd.forEach((item, index) => {
-          toAdd[index] = new options.Model(item, { commit: false })
-        })
-      }
+      // if (options.Model) {
+      //   toAdd.forEach((item, index) => {
+      //     toAdd[index] = new options.Model(item, { commit: false })
+      //   })
+      // }
 
       if (toAdd.length) commit('addItems', toAdd)
       if (toUpdate.length) commit('updateItems', toUpdate)
