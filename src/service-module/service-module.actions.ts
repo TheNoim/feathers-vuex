@@ -299,8 +299,8 @@ export default function makeServiceActions({
     },
 
     addOrUpdateList({ state, getters, commit }, response) {
-      const list = response.data || response
-      const isPaginated = response.hasOwnProperty('total')
+      const isArray = Array.isArray(response)
+      const list = isArray ? response : response.data
       const toAdd = []
       const toUpdate = []
       const toRemove = []
@@ -312,12 +312,12 @@ export default function makeServiceActions({
         const id = getId(item, idField)
         const existingItem = state.keyedById[id]
 
-        if (id !== null && id !== undefined) {
+        if (id != null) {
           existingItem ? toUpdate.push(item) : toAdd.push(item)
         }
       })
 
-      if (!isPaginated && !disableRemove) {
+      if (isArray && !disableRemove) {
         // Find IDs from the state which are not in the list
         getters.ids.forEach(id => {
           if (!list.some(item => getId(item, idField) === id)) {
@@ -333,8 +333,8 @@ export default function makeServiceActions({
         })
       }
 
-      commit('addItems', toAdd)
-      commit('updateItems', toUpdate)
+      if (toAdd.length) commit('addItems', toAdd)
+      if (toUpdate.length) commit('updateItems', toUpdate)
 
       return response
     },

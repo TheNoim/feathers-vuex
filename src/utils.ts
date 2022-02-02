@@ -282,7 +282,7 @@ export function getServiceCapitalization(servicePath) {
 }
 
 export function updateOriginal(original, newData) {
-  Object.keys(newData).forEach(key => {
+  for (const key in newData) {
     const newProp = newData[key]
     const oldProp = original[key]
     let shouldCopyProp = false
@@ -291,8 +291,10 @@ export function updateOriginal(original, newData) {
       return
     }
 
+    const originalHasProp = original.hasOwnProperty(key)
+
     // If the old item doesn't already have this property, update it
-    if (!original.hasOwnProperty(key)) {
+    if (!originalHasProp) {
       shouldCopyProp = true
       // If the old prop is null or undefined, and the new prop is neither
     } else if (
@@ -315,13 +317,13 @@ export function updateOriginal(original, newData) {
     }
 
     if (shouldCopyProp) {
-      if (original.hasOwnProperty(key)) {
+      if (originalHasProp) {
         original[key] = newProp
       } else {
         Vue.set(original, key, newProp)
       }
     }
-  })
+  }
 }
 
 export function getQueryInfo(
