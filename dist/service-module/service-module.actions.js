@@ -38,7 +38,9 @@ eslint
 */
 import fastCopy from 'fast-copy'
 import { getId } from '../utils'
-import { nextTick } from 'vue-demi'
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 export default function makeServiceActions({ service, options }) {
   const serviceActions = {
     find({ commit, dispatch }, params) {
@@ -328,7 +330,7 @@ export default function makeServiceActions({ service, options }) {
           for (let i = 0; i < chunksCount; i++) {
             const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
             commit('addItems', chunk)
-            yield nextTick()
+            yield sleep(20)
           }
         }
         if (toUpdate.length) {
@@ -336,11 +338,9 @@ export default function makeServiceActions({ service, options }) {
           for (let i = 0; i < chunksCount; i++) {
             const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
             commit('updateItems', chunk)
-            yield nextTick()
+            yield sleep(20)
           }
         }
-        if (toAdd.length) commit('addItems', toAdd)
-        if (toUpdate.length) commit('updateItems', toUpdate)
         return response
       })
     },
