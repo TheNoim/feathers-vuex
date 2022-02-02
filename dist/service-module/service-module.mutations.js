@@ -75,49 +75,49 @@ export default function makeServiceMutations() {
   }
   function updateItems(state, items) {
     const { idField, replaceItems, addOnUpsert, serverAlias, modelName } = state
-    const Model = _get(models, [serverAlias, modelName])
-    const BaseModel = _get(models, [state.serverAlias, 'BaseModel'])
+    const Model = models[serverAlias][modelName]
+    const BaseModel = models[serverAlias]['BaseModel']
     for (let i = 0, n = items.length; i < n; i++) {
       let item = items[i]
       const id = getId(item, idField)
+      if (id == null) {
+        continue
+      }
       // If the response contains a real id, remove isTemp
-      if (id != null) {
+      if ('__isTemp' in item) {
         delete item.__isTemp
       }
       // Update the record
-      if (id !== null && id !== undefined) {
-        if (!!state.keyedById[id]) {
-          // Completely replace the item
-          if (replaceItems) {
-            if (Model && !(item instanceof Model)) {
-              item = new Model(item)
-            }
-            Vue.set(state.keyedById, id, item)
-            // Merge in changes
-          } else {
-            /**
-             * If we have a Model class, calling new Model(incomingData) will call update
-             * the original record with the accessors and setupInstance data.
-             * This means that date objects and relationships will be preserved.
-             *
-             * If there's no Model class, just call updateOriginal on the incoming data.
-             */
-            if (
-              Model &&
-              !(item instanceof BaseModel) &&
-              !(item instanceof Model)
-            ) {
-              item = new Model(item)
-            } else {
-              const original = state.keyedById[id]
-              updateOriginal(original, item)
-            }
+      if (!!state.keyedById[id]) {
+        // Completely replace the item
+        if (replaceItems) {
+          if (Model && !(item instanceof Model)) {
+            item = new Model(item)
           }
-          // if addOnUpsert then add the record into the state, else discard it.
-        } else if (addOnUpsert) {
           Vue.set(state.keyedById, id, item)
+          // Merge in changes
+        } else {
+          /**
+           * If we have a Model class, calling new Model(incomingData) will call update
+           * the original record with the accessors and setupInstance data.
+           * This means that date objects and relationships will be preserved.
+           *
+           * If there's no Model class, just call updateOriginal on the incoming data.
+           */
+          if (
+            Model &&
+            !(item instanceof BaseModel) &&
+            !(item instanceof Model)
+          ) {
+            item = new Model(item)
+          } else {
+            const original = state.keyedById[id]
+            updateOriginal(original, item)
+          }
         }
-        continue
+        // if addOnUpsert then add the record into the state, else discard it.
+      } else if (addOnUpsert) {
+        Vue.set(state.keyedById, id, item)
       }
     }
   }
