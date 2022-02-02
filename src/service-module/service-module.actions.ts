@@ -7,14 +7,11 @@ import fastCopy from 'fast-copy'
 import { getId } from '../utils'
 import { Service } from '@feathersjs/feathers'
 import { MakeServicePluginOptions } from './types'
+import { nextTick } from 'vue-demi'
 
 interface serviceAndOptions {
   service: Service<any>
   options: MakeServicePluginOptions
-}
-
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export default function makeServiceActions({
@@ -342,9 +339,9 @@ export default function makeServiceActions({
       if (toAdd.length) {
         const chunksCount = Math.ceil(toAdd.length / chunkSize)
         for (let i = 0; i < chunksCount; i++) {
-          const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+          const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
           commit('addItems', chunk)
-          await sleep(20)
+          await nextTick()
         }
       }
 
@@ -352,9 +349,9 @@ export default function makeServiceActions({
         const chunksCount = Math.ceil(toUpdate.length / chunkSize)
 
         for (let i = 0; i < chunksCount; i++) {
-          const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+          const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
           commit('updateItems', chunk)
-          await sleep(20)
+          await nextTick()
         }
       }
 
