@@ -38,6 +38,7 @@ eslint
 */
 import fastCopy from 'fast-copy'
 import { getId } from '../utils'
+import { nextTick } from 'vue-demi'
 export default function makeServiceActions({ service, options }) {
   const serviceActions = {
     find({ commit, dispatch }, params) {
@@ -122,7 +123,7 @@ export default function makeServiceActions({ service, options }) {
         .then((response) =>
           __awaiter(this, void 0, void 0, function* () {
             if (Array.isArray(response)) {
-              dispatch('addOrUpdateList', response)
+              yield dispatch('addOrUpdateList', response)
               response = response.map((item) => {
                 const id = getId(item, idField)
                 return state.keyedById[id]
@@ -258,7 +259,7 @@ export default function makeServiceActions({ service, options }) {
       return __awaiter(this, void 0, void 0, function* () {
         const { qid = 'default', query } = params
         const { idField } = state
-        dispatch('addOrUpdateList', response)
+        yield dispatch('addOrUpdateList', response)
         commit('unsetPending', 'find')
         const mapItemFromState = (item) => {
           const id = getId(item, idField)
@@ -292,37 +293,56 @@ export default function makeServiceActions({ service, options }) {
       })
     },
     addOrUpdateList({ state, getters, commit }, response) {
-      const isArray = Array.isArray(response)
-      const list = isArray ? response : response.data
-      const toAdd = []
-      const toUpdate = []
-      const toRemove = []
-      const { idField, autoRemove } = state
-      const disableRemove = response.disableRemove || !autoRemove
-      list.forEach((item) => {
-        const id = getId(item, idField)
-        const existingItem = state.keyedById[id]
-        if (id != null) {
-          existingItem ? toUpdate.push(item) : toAdd.push(item)
-        }
-      })
-      if (isArray && !disableRemove) {
-        // Find IDs from the state which are not in the list
-        getters.ids.forEach((id) => {
-          if (!list.some((item) => getId(item, idField) === id)) {
-            toRemove.push(state.keyedById[id])
+      return __awaiter(this, void 0, void 0, function* () {
+        const isArray = Array.isArray(response)
+        const list = isArray ? response : response.data
+        const toAdd = []
+        const toUpdate = []
+        const toRemove = []
+        const { idField, autoRemove } = state
+        const disableRemove = response.disableRemove || !autoRemove
+        list.forEach((item) => {
+          const id = getId(item, idField)
+          const existingItem = state.keyedById[id]
+          if (id != null) {
+            existingItem ? toUpdate.push(item) : toAdd.push(item)
           }
         })
-        commit('removeItems', toRemove) // commit removal
-      }
-      // if (options.Model) {
-      //   toAdd.forEach((item, index) => {
-      //     toAdd[index] = new options.Model(item, { commit: false })
-      //   })
-      // }
-      if (toAdd.length) commit('addItems', toAdd)
-      if (toUpdate.length) commit('updateItems', toUpdate)
-      return response
+        if (isArray && !disableRemove) {
+          // Find IDs from the state which are not in the list
+          getters.ids.forEach((id) => {
+            if (!list.some((item) => getId(item, idField) === id)) {
+              toRemove.push(state.keyedById[id])
+            }
+          })
+          commit('removeItems', toRemove) // commit removal
+        }
+        // if (options.Model) {
+        //   toAdd.forEach((item, index) => {
+        //     toAdd[index] = new options.Model(item, { commit: false })
+        //   })
+        // }
+        const chunkSize = 50
+        if (toAdd.length) {
+          const chunksCount = Math.ceil(toAdd.length / chunkSize)
+          for (let i = 0; i < chunksCount; i++) {
+            const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+            commit('addItems', chunk)
+            yield nextTick()
+          }
+        }
+        if (toUpdate.length) {
+          const chunksCount = Math.ceil(toUpdate.length / chunkSize)
+          for (let i = 0; i < chunksCount; i++) {
+            const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+            commit('updateItems', chunk)
+            yield nextTick()
+          }
+        }
+        if (toAdd.length) commit('addItems', toAdd)
+        if (toUpdate.length) commit('updateItems', toUpdate)
+        return response
+      })
     },
     /**
      * Adds or updates an item. If a matching temp record is found in the store,

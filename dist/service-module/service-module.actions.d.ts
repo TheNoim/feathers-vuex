@@ -35,7 +35,7 @@ export default function makeServiceActions({ service, options }: serviceAndOptio
         state: any;
         getters: any;
         commit: any;
-    }, response: any): any;
+    }, response: any): Promise<any>;
     /**
      * Adds or updates an item. If a matching temp record is found in the store,
      * the temp record will completely replace the existingItem. This is to work

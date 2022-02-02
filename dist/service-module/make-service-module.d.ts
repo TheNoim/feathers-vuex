@@ -99,7 +99,7 @@ export default function makeServiceModule(service: Service<any>, options: MakeSe
             state: any;
             getters: any;
             commit: any;
-        }, response: any): any;
+        }, response: any): Promise<any>;
         addOrUpdate({ state, commit }: {
             state: any;
             commit: any;

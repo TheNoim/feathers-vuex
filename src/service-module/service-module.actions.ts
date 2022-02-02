@@ -7,6 +7,7 @@ import fastCopy from 'fast-copy'
 import { getId } from '../utils'
 import { Service } from '@feathersjs/feathers'
 import { MakeServicePluginOptions } from './types'
+import { nextTick } from 'vue-demi'
 
 interface serviceAndOptions {
   service: Service<any>
@@ -108,7 +109,7 @@ export default function makeServiceActions({
         .create(data, params)
         .then(async response => {
           if (Array.isArray(response)) {
-            dispatch('addOrUpdateList', response)
+            await dispatch('addOrUpdateList', response)
             response = response.map(item => {
               const id = getId(item, idField)
 
@@ -261,7 +262,7 @@ export default function makeServiceActions({
       const { qid = 'default', query } = params
       const { idField } = state
 
-      dispatch('addOrUpdateList', response)
+      await dispatch('addOrUpdateList', response)
       commit('unsetPending', 'find')
 
       const mapItemFromState = item => {
@@ -298,7 +299,7 @@ export default function makeServiceActions({
       return response
     },
 
-    addOrUpdateList({ state, getters, commit }, response) {
+    async addOrUpdateList({ state, getters, commit }, response) {
       const isArray = Array.isArray(response)
       const list = isArray ? response : response.data
       const toAdd = []
@@ -332,6 +333,27 @@ export default function makeServiceActions({
       //     toAdd[index] = new options.Model(item, { commit: false })
       //   })
       // }
+
+      const chunkSize = 50
+
+      if (toAdd.length) {
+        const chunksCount = Math.ceil(toAdd.length / chunkSize)
+        for (let i = 0; i < chunksCount; i++) {
+          const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+          commit('addItems', chunk)
+          await nextTick()
+        }
+      }
+
+      if (toUpdate.length) {
+        const chunksCount = Math.ceil(toUpdate.length / chunkSize)
+
+        for (let i = 0; i < chunksCount; i++) {
+          const chunk = toAdd.slice(i * chunkSize, i * chunkSize + 1)
+          commit('updateItems', chunk)
+          await nextTick()
+        }
+      }
 
       if (toAdd.length) commit('addItems', toAdd)
       if (toUpdate.length) commit('updateItems', toUpdate)
