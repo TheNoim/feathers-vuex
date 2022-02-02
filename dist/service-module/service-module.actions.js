@@ -322,13 +322,15 @@ export default function makeServiceActions({ service, options }) {
         //     toAdd[index] = new options.Model(item, { commit: false })
         //   })
         // }
-        const chunkSize = 50
+        const chunkSize = 100
         if (toAdd.length) {
           const chunksCount = Math.ceil(toAdd.length / chunkSize)
           for (let i = 0; i < chunksCount; i++) {
             const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
             commit('addItems', chunk)
-            yield nextTick()
+            if (i !== chunksCount - 1) {
+              yield nextTick()
+            }
           }
         }
         if (toUpdate.length) {
@@ -336,7 +338,9 @@ export default function makeServiceActions({ service, options }) {
           for (let i = 0; i < chunksCount; i++) {
             const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
             commit('updateItems', chunk)
-            yield nextTick()
+            if (i !== chunksCount - 1) {
+              yield nextTick()
+            }
           }
         }
         return response

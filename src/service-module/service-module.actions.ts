@@ -334,14 +334,16 @@ export default function makeServiceActions({
       //   })
       // }
 
-      const chunkSize = 50
+      const chunkSize = 100
 
       if (toAdd.length) {
         const chunksCount = Math.ceil(toAdd.length / chunkSize)
         for (let i = 0; i < chunksCount; i++) {
           const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
           commit('addItems', chunk)
-          await nextTick()
+          if (i !== chunksCount - 1) {
+            await nextTick()
+          }
         }
       }
 
@@ -351,7 +353,9 @@ export default function makeServiceActions({
         for (let i = 0; i < chunksCount; i++) {
           const chunk = toAdd.slice(i * chunkSize, (i + 1) * chunkSize)
           commit('updateItems', chunk)
-          await nextTick()
+          if (i !== chunksCount - 1) {
+            await nextTick()
+          }
         }
       }
 
