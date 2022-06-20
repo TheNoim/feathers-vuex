@@ -14,50 +14,73 @@ import { Id } from '@feathersjs/feathers'
 const FILTERS = ['$sort', '$limit', '$skip', '$select']
 const additionalOperators = ['$elemMatch']
 
-const getCopiesById = ({
-  keepCopiesInStore,
-  servicePath,
-  serverAlias,
-  copiesById
-}) => {
-  if (keepCopiesInStore) {
-    return copiesById
-  } else {
-    const Model = models[serverAlias].byServicePath[servicePath]
-
-    return Model.copiesById
-  }
-}
-
 export default function makeServiceGetters() {
   return {
     list: state => Object.values(state.keyedById),
-    find: state => _params => {
+    temps: state => Object.values(state.tempsById),
+    copiesById: state => {
+      if (state.keepCopiesInStore === false) {
+        const server = models[state.serverAlias]
+        if (!server) {
+          const hallo = ''
+        }
+        const Model = models[state.serverAlias].byServicePath[state.servicePath]
+
+        return Model.copiesById
+      } else {
+        return state.copiesById
+      }
+    },
+    copies: state => {
+      if (state.keepCopiesInStore) {
+        return Object.values(state.copiesById)
+      } else {
+        const Model = models[state.serverAlias].byServicePath[state.servicePath]
+
+        return Object.values(Model.copiesById)
+      }
+    },
+    filterQueryOptions: state => {
+      return {
+        operators: additionalOperators.concat(state.whitelist)
+      }
+    },
+    find: (state, getters) => _params => {
       const params = unref(_params) || {}
 
-      const {
-        paramsForServer,
-        whitelist,
-        keyedById,
-        idField,
-        tempsById
-      } = state
-      const q = _omit(params.query || {}, paramsForServer)
+      const { paramsForServer, idField } = state
 
-      const { query, filters } = filterQuery(q, {
-        operators: additionalOperators.concat(whitelist)
-      })
+      let q = params.query || {}
+      let copied = false
 
-      let values = Object.values(keyedById) as any
+      if (paramsForServer?.length) {
+        for (let i = 0, n = paramsForServer.length; i < n; i++) {
+          const key = paramsForServer[i]
+          if (!(key in q)) {
+            continue
+          }
+
+          // lazily copy
+          if (!copied) {
+            q = Object.assign({}, q)
+            copied = true
+          }
+          delete q[key]
+        }
+      }
+
+      const { query, filters } = filterQuery(q, getters.filterQueryOptions)
+
+      let values = getters.list.slice(0)
 
       if (params.temps) {
-        values.push(...(Object.values(tempsById) as any))
+        values.push(...getters.temps)
       }
 
       values = values.filter(sift(query))
 
       if (params.copies) {
-        const copiesById = getCopiesById(state)
+        const copiesById = getters.copiesById
         // replace keyedById value with existing clone value
         values = values.map(value => copiesById[value[idField]] || value)
       }
@@ -93,35 +116,41 @@ export default function makeServiceGetters() {
 
       return getters.find(params).total
     },
-    get: ({ keyedById, tempsById, idField, tempIdField }) => (
-      _id,
-      _params = {}
-    ) => {
-      const id = unref(_id)
-      const params = unref(_params)
+    get:
+      ({ keyedById, tempsById, idField, tempIdField }) =>
+      (_id, _params = {}) => {
+        const id = unref(_id)
+        const params = unref(_params)
 
-      const record = keyedById[id] && select(params, idField)(keyedById[id])
-      if (record) {
-        return record
-      }
-      const tempRecord =
-        tempsById[id] && select(params, tempIdField)(tempsById[id])
+        const record = keyedById[id] && select(params, idField)(keyedById[id])
+        if (record) {
+          return record
+        }
+        const tempRecord =
+          tempsById[id] && select(params, tempIdField)(tempsById[id])
 
-      return tempRecord || null
-    },
-    getCopyById: state => id => {
-      const copiesById = getCopiesById(state)
-      return copiesById[id]
+        return tempRecord || null
+      },
+    getCopyById: (state, getters) => id => {
+      return getters.copiesById[id]
     },
 
-    isCreatePendingById: ({ isIdCreatePending }: ServiceState) => (id: Id) =>
-      isIdCreatePending.includes(id),
-    isUpdatePendingById: ({ isIdUpdatePending }: ServiceState) => (id: Id) =>
-      isIdUpdatePending.includes(id),
-    isPatchPendingById: ({ isIdPatchPending }: ServiceState) => (id: Id) =>
-      isIdPatchPending.includes(id),
-    isRemovePendingById: ({ isIdRemovePending }: ServiceState) => (id: Id) =>
-      isIdRemovePending.includes(id),
+    isCreatePendingById:
+      ({ isIdCreatePending }: ServiceState) =>
+      (id: Id) =>
+        isIdCreatePending.includes(id),
+    isUpdatePendingById:
+      ({ isIdUpdatePending }: ServiceState) =>
+      (id: Id) =>
+        isIdUpdatePending.includes(id),
+    isPatchPendingById:
+      ({ isIdPatchPending }: ServiceState) =>
+      (id: Id) =>
+        isIdPatchPending.includes(id),
+    isRemovePendingById:
+      ({ isIdRemovePending }: ServiceState) =>
+      (id: Id) =>
+        isIdRemovePending.includes(id),
     isSavePendingById: (state: ServiceState, getters) => (id: Id) =>
       getters.isCreatePendingById(id) ||
       getters.isUpdatePendingById(id) ||
