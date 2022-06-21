@@ -96,6 +96,8 @@ export default function makeServiceMutations() {
     const { idField, replaceItems, addOnUpsert, serverAlias, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
 
+    let keyedById
+
     for (let i = 0, n = items.length; i < n; i++) {
       let item = items[i]
 
@@ -114,7 +116,12 @@ export default function makeServiceMutations() {
             if (Model && !(item instanceof Model)) {
               item = new Model(item)
             }
-            Vue.set(state.keyedById, id, item)
+            if (!keyedById) {
+              keyedById = {}
+            }
+
+            keyedById[id] = item
+            // Vue.set(state.keyedById, id, item)
             // Merge in changes
           } else {
             /**
@@ -134,10 +141,19 @@ export default function makeServiceMutations() {
 
           // if addOnUpsert then add the record into the state, else discard it.
         } else if (addOnUpsert) {
-          Vue.set(state.keyedById, id, item)
+          if (!keyedById) {
+            keyedById = {}
+          }
+
+          keyedById[id] = item
+          // Vue.set(state.keyedById, id, item)
         }
         continue
       }
+    }
+
+    if (keyedById) {
+      state.keyedById = Object.assign({}, state.keyedById, keyedById)
     }
   }
 

@@ -336,7 +336,9 @@ export default function makeServiceActions({
             toRemove.push(state.keyedById[id])
           }
         })
-        commit('removeItems', toRemove) // commit removal
+        if (toRemove.length) {
+          commit('removeItems', toRemove) // commit removal
+        }
       }
 
       // if (options.Model) {
@@ -345,8 +347,12 @@ export default function makeServiceActions({
       //   })
       // }
 
-      commit('addItems', toAdd)
-      commit('updateItems', toUpdate)
+      if (toAdd.length) {
+        commit('addItems', toAdd)
+      }
+      if (toUpdate.length) {
+        commit('updateItems', toUpdate)
+      }
 
       return response
     },
