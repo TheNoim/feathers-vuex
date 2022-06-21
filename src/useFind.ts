@@ -13,6 +13,7 @@ import {
 import debounce from 'lodash/debounce'
 import { getItemsFromQueryInfo, getQueryInfo, Params, Paginated } from './utils'
 import { ModelStatic, Model } from './service-module/types'
+import { deepEqual as _isEqual } from 'fast-equals'
 
 interface UseFindOptions {
   model: ModelStatic
@@ -51,7 +52,9 @@ interface UseFindData<M> {
 const unwrapParams = (params: Params | Ref<Params>): Params =>
   isRef(params) ? params.value : params
 
-export default function find<M extends Model = Model>(options: UseFindOptions): UseFindData<M> {
+export default function find<M extends Model = Model>(
+  options: UseFindOptions
+): UseFindData<M> {
   const defaults: UseFindOptions = {
     model: null,
     params: null,
@@ -143,7 +146,7 @@ export default function find<M extends Model = Model>(options: UseFindOptions): 
         // To prevent thrashing, only clear error on response, not on initial request.
         state.error = null
         state.haveLoaded = true
-        if(!Array.isArray(response)) {
+        if (!Array.isArray(response)) {
           const queryInfo = getQueryInfo(params, response)
           queryInfo.response = response
           queryInfo.isOutdated = false
@@ -177,7 +180,10 @@ export default function find<M extends Model = Model>(options: UseFindOptions): 
 
   watch(
     () => getFetchParams(),
-    () => {
+    (val, oldVal) => {
+      if (_isEqual(val, oldVal)) {
+        return
+      }
       findProxy()
     },
     { immediate }
