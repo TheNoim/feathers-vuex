@@ -36,7 +36,6 @@ export default function makeServiceMutations() {
   function addItems(state, items) {
     const { serverAlias, idField, tempIdField, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
-    const BaseModel = _get(models, [serverAlias, 'BaseModel'])
 
     let tempsById
     let keyedById
@@ -52,7 +51,7 @@ export default function makeServiceMutations() {
         delete item.__isTemp
       }
 
-      if (Model && !(item instanceof BaseModel) && !(item instanceof Model)) {
+      if (Model && !(item instanceof Model)) {
         item = new Model(item, { commit: false })
       }
 
@@ -62,26 +61,34 @@ export default function makeServiceMutations() {
           tempId = assignTempId(state, item)
         }
         item.__isTemp = true
-        if (!tempsById) {
-          tempsById = {}
+        if (items.length === 1) {
+          Vue.set(state.tempsById, tempId, item)
+          return
+        } else {
+          if (!tempsById) {
+            tempsById = {}
+          }
+          tempsById[tempId] = item
         }
-        tempsById[tempId] = item
-        // Vue.set(state.tempsById, tempId, item)
       } else {
-        if (!keyedById) {
-          keyedById = {}
+        if (items.length === 1) {
+          Vue.set(state.keyedById, id, item)
+          return
+        } else {
+          if (!keyedById) {
+            keyedById = {}
+          }
+          keyedById[id] = item
         }
-        keyedById[id] = item
-        // Vue.set(state.keyedById, id, item)
       }
     }
 
     if (tempsById) {
-      Vue.set(state, 'tempsById', Object.assign({}, state.tempsById, tempsById))
+      state.tempsById = Object.assign({}, state.tempsById, tempsById)
     }
 
     if (keyedById) {
-      Vue.set(state, 'keyedById', Object.assign({}, state.keyedById, keyedById))
+      state.keyedById = Object.assign({}, state.keyedById, keyedById)
     }
   }
 

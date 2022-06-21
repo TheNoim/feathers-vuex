@@ -439,19 +439,26 @@ export function isBaseModelInstance(item) {
   })
 }
 
+export function isFeathersVuexInstance(val) {
+  return !!(val.constructor.modelName || val.constructor.namespace)
+}
+
 export function mergeWithAccessors(
   dest,
   source,
   blacklist = ['__isClone', '__ob__']
 ) {
   const sourceProps = Object.getOwnPropertyNames(source)
+  if (!sourceProps.length) {
+    return dest
+  }
+
   const destProps = Object.getOwnPropertyNames(dest)
   const sourceIsVueObservable = sourceProps.includes('__ob__')
   const destIsVueObservable = destProps.includes('__ob__')
   for (let i = 0, len = sourceProps.length; i < len; i++) {
     const key = sourceProps[i]
 
-    const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
     const destDesc = Object.getOwnPropertyDescriptor(dest, key)
 
     // if (Array.isArray(source[key]) && source[key].find(i => i.__ob__)) {
@@ -475,13 +482,9 @@ export function mergeWithAccessors(
     // Handle Vue observable objects
     if (destIsVueObservable || sourceIsVueObservable) {
       const isObject = _isObject(source[key])
-      const isFeathersVuexInstance =
-        isObject &&
-        !!(
-          source[key].constructor.modelName || source[key].constructor.namespace
-        )
+
       // Do not use fastCopy directly on a feathers-vuex BaseModel instance to keep from breaking reactivity.
-      if (isObject && !isFeathersVuexInstance) {
+      if (isObject && !isFeathersVuexInstance(source[key])) {
         try {
           dest[key] = fastCopy(source[key])
         } catch (err) {
@@ -501,6 +504,8 @@ export function mergeWithAccessors(
       continue
     }
 
+    const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
+
     // Handle defining accessors
     if (
       typeof sourceDesc.get === 'function' ||
@@ -519,7 +524,10 @@ export function mergeWithAccessors(
     // Do not allow sharing of deeply-nested objects between instances
     // Potentially breaks accessors on nested data. Needs recursion if this is an issue
     let value
-    if (_isObject(sourceDesc.value) && !isBaseModelInstance(sourceDesc.value)) {
+    if (
+      _isObject(sourceDesc.value) &&
+      !isFeathersVuexInstance(sourceDesc.value)
+    ) {
       value = fastCopy(sourceDesc.value)
     }
     dest[key] = value || sourceDesc.value

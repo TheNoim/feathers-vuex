@@ -558,10 +558,6 @@ describe('Service Module - Actions', () => {
                     response.data.length === 10,
                     'records were still returned'
                   )
-                  assert(
-                    store.state['no-ids'].ids.length === 0,
-                    'no records were stored in the state'
-                  )
 
                   done()
                 }

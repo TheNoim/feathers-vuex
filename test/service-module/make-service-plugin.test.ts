@@ -387,7 +387,7 @@ describe('makeServicePlugin', function () {
     const store = new Vuex.Store<{ todos: ServiceState }>({
       plugins: [todosPlugin]
     })
-    const { keyedById } = store.state['make-service-plugin-todos']
+    const state = store.state['make-service-plugin-todos']
 
     let createdData = null
     let updatedData = null
@@ -398,14 +398,14 @@ describe('makeServicePlugin', function () {
     Todo.on('patched', e => (patchedData = e))
     Todo.on('removed', e => (removedData = e))
 
-    assert(Object.keys(keyedById).length === 0, 'no todos in store')
+    assert(Object.keys(state.keyedById).length === 0, 'no todos in store')
 
     todosService.emit('created', {
       context: 'foo',
       myCreatedPropWithActualData: { _id: 42, text: '' }
     })
-    assert(keyedById[42], 'todo added to store')
-    assert(keyedById[42].text === '', 'todo string is empty')
+    assert(state.keyedById[42], 'todo added to store')
+    assert(state.keyedById[42].text === '', 'todo string is empty')
     assert(createdData, "Model's created event fired")
     assert(
       createdData.context === 'foo' && createdData.myCreatedPropWithActualData,
@@ -416,7 +416,7 @@ describe('makeServicePlugin', function () {
       context: 'bar',
       myUpdatedPropWithActualData: { _id: 42, text: 'updated' }
     })
-    assert(keyedById[42].text === 'updated', 'todo was updated')
+    assert(state.keyedById[42].text === 'updated', 'todo was updated')
     assert(updatedData, "Model's updated event fired")
     assert(
       updatedData.context === 'bar' && updatedData.myUpdatedPropWithActualData,
@@ -427,7 +427,7 @@ describe('makeServicePlugin', function () {
       context: 'baz',
       myPatchedPropWithActualData: { _id: 42, text: 'patched' }
     })
-    assert(keyedById[42].text === 'patched', 'todo was patched')
+    assert(state.keyedById[42].text === 'patched', 'todo was patched')
     assert(patchedData, "Model's patched event fired")
     assert(
       patchedData.context === 'baz' && patchedData.myPatchedPropWithActualData,
@@ -438,7 +438,7 @@ describe('makeServicePlugin', function () {
       context: 'spam',
       myRemovedPropWithActualData: { _id: 42 }
     })
-    assert(Object.keys(keyedById).length === 0, 'todo removed from store')
+    assert(Object.keys(state.keyedById).length === 0, 'todo removed from store')
     assert(removedData, "Model's removed event fired")
     assert(
       removedData.context === 'spam' && removedData.myRemovedPropWithActualData,
