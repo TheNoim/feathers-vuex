@@ -15,7 +15,13 @@ import {
   PatchParams
 } from './types'
 import { globalModels, prepareAddModel } from './global-models'
-import { mergeWithAccessors, checkNamespace, getId, Params } from '../utils'
+import {
+  mergeWithAccessors,
+  checkNamespace,
+  getId,
+  Params,
+  isFeathersVuexInstance
+} from '../utils'
 import _merge from 'lodash/merge'
 import _get from 'lodash/get'
 import { EventEmitter } from 'events'
@@ -122,7 +128,10 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
         // If it already exists, update the original and return
         if (existingItem) {
-          data = setupInstance.call(this, data, { models, store }) || data
+          if (!isFeathersVuexInstance(data)) {
+            data = setupInstance.call(this, data, { models, store }) || data
+          }
+
           _commit.call(this.constructor, 'mergeInstance', data)
           return existingItem
         }
@@ -158,19 +167,26 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       }
 
       // Setup instanceDefaults
-      if (instanceDefaults && typeof instanceDefaults === 'function') {
+      if (
+        !isFeathersVuexInstance(data) &&
+        instanceDefaults &&
+        typeof instanceDefaults === 'function'
+      ) {
         const defaults =
           instanceDefaults.call(this, data, { models, store }) || data
-        mergeWithAccessors(this, defaults)
+        mergeWithAccessors(this, defaults, {
+          suppressFastCopy: true
+        })
       }
 
       // Handles Vue objects or regular ones. We can't simply assign or return
       // the data due to how Vue wraps everything into an accessor.
       if (options.merge !== false) {
-        mergeWithAccessors(
-          this,
+        const transformed =
           setupInstance.call(this, data, { models, store }) || data
-        )
+        mergeWithAccessors(this, transformed, {
+          suppressFastCopy: !options.clone
+        })
       }
 
       // Add the item to the store

@@ -443,11 +443,21 @@ export function isFeathersVuexInstance(val) {
   return !!(val.constructor.modelName || val.constructor.namespace)
 }
 
+const defaultBlacklist = ['__isClone', '__ob__']
+
+type MergeWithAccessorsOptions = {
+  blacklist?: string[]
+  suppressFastCopy?: boolean
+}
+
 export function mergeWithAccessors(
   dest,
   source,
-  blacklist = ['__isClone', '__ob__']
+  _opts?: MergeWithAccessorsOptions
 ) {
+  const blacklist = _opts?.blacklist || defaultBlacklist
+  const suppressFastCopy = !!_opts?.suppressFastCopy
+
   const sourceProps = Object.getOwnPropertyNames(source)
   if (!sourceProps.length) {
     return dest
@@ -484,7 +494,11 @@ export function mergeWithAccessors(
       const isObject = _isObject(source[key])
 
       // Do not use fastCopy directly on a feathers-vuex BaseModel instance to keep from breaking reactivity.
-      if (isObject && !isFeathersVuexInstance(source[key])) {
+      if (
+        !suppressFastCopy &&
+        isObject &&
+        !isFeathersVuexInstance(source[key])
+      ) {
         try {
           dest[key] = fastCopy(source[key])
         } catch (err) {
@@ -528,7 +542,7 @@ export function mergeWithAccessors(
       _isObject(sourceDesc.value) &&
       !isFeathersVuexInstance(sourceDesc.value)
     ) {
-      value = fastCopy(sourceDesc.value)
+      value = suppressFastCopy ? sourceDesc.value : fastCopy(sourceDesc.value)
     }
     dest[key] = value || sourceDesc.value
   }
