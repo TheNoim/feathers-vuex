@@ -8,12 +8,15 @@ import { getId } from '../utils'
 import { Service } from '@feathersjs/feathers'
 import { MakeServicePluginOptions } from './types'
 
-interface serviceAndOptions {
+interface ServiceAndOptions {
   service: Service<any>
   options: MakeServicePluginOptions
 }
 
-export default function makeServiceActions({service, options}: serviceAndOptions) {
+export default function makeServiceActions({
+  service,
+  options
+}: ServiceAndOptions) {
   const serviceActions = {
     find({ commit, dispatch }, params) {
       params = params || {}
@@ -179,7 +182,7 @@ export default function makeServiceActions({service, options}: serviceAndOptions
       if (params && params.data) {
         data = params.data
       }
-      
+
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         // skip request if empty data
         return Promise.resolve(state.keyedById[id])
@@ -304,7 +307,7 @@ export default function makeServiceActions({service, options}: serviceAndOptions
       return response
     },
 
-    addOrUpdateList({ state, commit }, response) {
+    addOrUpdateList({ state, getters, commit }, response) {
       const list = response.data || response
       const isPaginated = response.hasOwnProperty('total')
       const toAdd = []
@@ -314,18 +317,21 @@ export default function makeServiceActions({service, options}: serviceAndOptions
 
       const disableRemove = response.disableRemove || !autoRemove
 
-      list.forEach(item => {
+      for (let i = 0, n = list.length; i < n; i++) {
+        const item = list[i]
+
         const id = getId(item, idField)
         const existingItem = state.keyedById[id]
 
         if (id !== null && id !== undefined) {
           existingItem ? toUpdate.push(item) : toAdd.push(item)
         }
-      })
+      }
 
       if (!isPaginated && !disableRemove) {
         // Find IDs from the state which are not in the list
-        state.ids.forEach(id => {
+        getters.list.forEach(_item => {
+          const id = getId(_item, idField)
           if (!list.some(item => getId(item, idField) === id)) {
             toRemove.push(state.keyedById[id])
           }
@@ -333,11 +339,11 @@ export default function makeServiceActions({service, options}: serviceAndOptions
         commit('removeItems', toRemove) // commit removal
       }
 
-      if (options.Model) {
-        toAdd.forEach((item, index) => {
-          toAdd[index] = new options.Model(item, { commit: false })
-        })
-      }
+      // if (options.Model) {
+      //   toAdd.forEach((item, index) => {
+      //     toAdd[index] = new options.Model(item, { commit: false })
+      //   })
+      // }
 
       commit('addItems', toAdd)
       commit('updateItems', toUpdate)
@@ -358,10 +364,7 @@ export default function makeServiceActions({service, options}: serviceAndOptions
 
       const isIdOk = id !== null && id !== undefined
 
-      if (
-        options.Model &&
-        !(item instanceof options.Model)
-      ) {
+      if (options.Model && !(item instanceof options.Model)) {
         item = new options.Model(item, { commit: false })
       }
 

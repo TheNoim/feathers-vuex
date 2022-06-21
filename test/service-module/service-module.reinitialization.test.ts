@@ -36,13 +36,8 @@ describe('Service Module - Reinitialization', function () {
    * This prevents state pollution in SSR setups.
    */
   it('does not preserve module/model state when reinitialized', function () {
-    const {
-      makeServicePlugin,
-      todoService,
-      Todo,
-      models,
-      serverAlias
-    } = makeContext()
+    const { makeServicePlugin, todoService, Todo, models, serverAlias } =
+      makeContext()
     const todosPlugin = makeServicePlugin({
       servicePath: 'todos',
       Model: Todo,
@@ -66,7 +61,6 @@ describe('Service Module - Reinitialization', function () {
       errorOnUpdate: null,
       idField: 'id',
       tempIdField: '__id',
-      ids: [],
       isCreatePending: false,
       isFindPending: false,
       isGetPending: false,
@@ -95,7 +89,7 @@ describe('Service Module - Reinitialization', function () {
       isIdCreatePending: [],
       isIdUpdatePending: [],
       isIdPatchPending: [],
-      isIdRemovePending: [],
+      isIdRemovePending: []
     }
 
     assert.deepEqual(

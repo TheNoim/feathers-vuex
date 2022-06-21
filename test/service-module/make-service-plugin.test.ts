@@ -66,7 +66,6 @@ describe('makeServicePlugin', function () {
       errorOnUpdate: null,
       idField: 'id',
       tempIdField: '__id',
-      ids: [],
       isCreatePending: false,
       isFindPending: false,
       isGetPending: false,

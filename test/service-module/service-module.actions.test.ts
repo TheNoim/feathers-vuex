@@ -142,13 +142,11 @@ describe('Service Module - Actions', () => {
         const todoState = store.state['my-todos']
         const actions = mapActions('my-todos', ['find'])
 
-        assert(todoState.ids.length === 0, 'no ids before find')
         assert(todoState.errorOnFind === null, 'no error before find')
         assert(todoState.isFindPending === false, 'isFindPending is false')
         assert(todoState.idField === 'id', 'idField is `id`')
 
         actions.find.call({ $store: store }, {}).then(response => {
-          assert(todoState.ids.length === 10, 'three ids populated')
           assert(todoState.errorOnFind === null, 'errorOnFind still null')
           assert(todoState.isFindPending === false, 'isFindPending is false')
           const expectedKeyedById: NumberedList = makeStore()
@@ -170,7 +168,6 @@ describe('Service Module - Actions', () => {
         })
 
         // Make sure proper state changes occurred before response
-        assert(todoState.ids.length === 0)
         assert(todoState.errorOnFind === null)
         assert(todoState.isFindPending === true)
         assert.deepEqual(todoState.keyedById, {})
@@ -541,10 +538,6 @@ describe('Service Module - Actions', () => {
 
         actions.find.call({ $store: store }, { query: {} }).then(response => {
           assert(response.data.length === 10, 'records were still returned')
-          assert(
-            store.state['no-ids'].ids.length === 0,
-            'no records were stored in the state'
-          )
 
           done()
         })
@@ -602,11 +595,9 @@ describe('Service Module - Actions', () => {
           'errorOnFind was set'
         )
         assert(brokenState.isFindPending === false, 'pending state was cleared')
-        assert(brokenState.ids.length === 0)
       })
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnFind === null)
       assert(brokenState.isFindPending === true)
     })
@@ -669,13 +660,11 @@ describe('Service Module - Actions', () => {
       const todoState = store.state['my-todos']
       const actions = mapActions('my-todos', ['get'])
 
-      assert(todoState.ids.length === 0)
       assert(todoState.errorOnGet === null)
       assert(todoState.isGetPending === false)
       assert(todoState.idField === 'id')
 
       const todo1 = await actions.get.call({ $store: store }, 0)
-      assert(todoState.ids.length === 1, 'only one item is in the store')
       assert(todoState.errorOnGet === null, 'there was no errorOnGet')
       assert(todoState.isGetPending === false, 'isGetPending is set to false')
 
@@ -735,13 +724,11 @@ describe('Service Module - Actions', () => {
       const todoState = store.state['my-todos']
       const actions = mapActions('my-todos', ['get'])
 
-      assert(todoState.ids.length === 0)
       assert(todoState.errorOnGet === null)
       assert(todoState.isGetPending === false)
       assert(todoState.idField === 'id')
 
       actions.get.call({ $store: store }, 0).then(() => {
-        assert(todoState.ids.length === 1, 'only one item is in the store')
         assert(todoState.errorOnGet === null, 'there was no errorOnGet')
         assert(todoState.isGetPending === false, 'isGetPending is set to false')
         let expectedKeyedById: NumberedList = {
@@ -799,7 +786,6 @@ describe('Service Module - Actions', () => {
       })
 
       // Make sure proper state changes occurred before response
-      assert(todoState.ids.length === 0)
       assert(todoState.errorOnCreate === null)
       assert(todoState.isGetPending === true)
       assert.deepEqual(JSON.parse(JSON.stringify(todoState.keyedById)), {})
@@ -825,11 +811,9 @@ describe('Service Module - Actions', () => {
           'errorOnGet was set'
         )
         assert(brokenState.isGetPending === false, 'pending state was cleared')
-        assert(brokenState.ids.length === 0)
       })
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnGet === null)
       assert(brokenState.isGetPending === true)
     })
@@ -853,7 +837,6 @@ describe('Service Module - Actions', () => {
       actions.create
         .call({ $store: store }, { description: 'Do the second' })
         .then(response => {
-          assert(todoState.ids.length === 1)
           assert(todoState.errorOnCreate === null)
           assert(todoState.isCreatePending === false)
           assert.deepEqual(todoState.keyedById[response.id], response)
@@ -861,7 +844,6 @@ describe('Service Module - Actions', () => {
         })
 
       // Make sure proper state changes occurred before response
-      assert(todoState.ids.length === 0)
       assert(todoState.errorOnCreate === null)
       assert(todoState.isCreatePending === true)
       assert(todoState.idField === 'id')
@@ -891,11 +873,9 @@ describe('Service Module - Actions', () => {
           brokenState.isCreatePending === false,
           'pending state was cleared'
         )
-        assert(brokenState.ids.length === 0)
       })
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnCreate === null)
       assert(brokenState.isCreatePending === true)
     })
@@ -925,12 +905,20 @@ describe('Service Module - Actions', () => {
               { id: 0, description: 'Do da dishuz' }
             ])
             .then(responseFromUpdate => {
-              assert(todoState.ids.length === 1)
               assert(todoState.errorOnUpdate === null)
               assert(todoState.isUpdatePending === false)
-              assert(store.getters['my-todos/isUpdatePendingById'](0) === false, 'ID pending update clear')
-              assert(store.getters['my-todos/isSavePendingById'](0) === false, 'ID pending save clear')
-              assert(store.getters['my-todos/isPendingById'](0) === false, 'ID pending clear')
+              assert(
+                store.getters['my-todos/isUpdatePendingById'](0) === false,
+                'ID pending update clear'
+              )
+              assert(
+                store.getters['my-todos/isSavePendingById'](0) === false,
+                'ID pending save clear'
+              )
+              assert(
+                store.getters['my-todos/isPendingById'](0) === false,
+                'ID pending clear'
+              )
               assert.deepEqual(
                 todoState.keyedById[responseFromUpdate.id],
                 responseFromUpdate
@@ -939,12 +927,20 @@ describe('Service Module - Actions', () => {
             })
 
           // Make sure proper state changes occurred before response
-          assert(todoState.ids.length === 1)
           assert(todoState.errorOnUpdate === null)
           assert(todoState.isUpdatePending === true)
-          assert(store.getters['my-todos/isUpdatePendingById'](0) === true, 'ID pending update set')
-          assert(store.getters['my-todos/isSavePendingById'](0) === true, 'ID pending save set')
-          assert(store.getters['my-todos/isPendingById'](0) === true, 'ID pending set')
+          assert(
+            store.getters['my-todos/isUpdatePendingById'](0) === true,
+            'ID pending update set'
+          )
+          assert(
+            store.getters['my-todos/isSavePendingById'](0) === true,
+            'ID pending save set'
+          )
+          assert(
+            store.getters['my-todos/isPendingById'](0) === true,
+            'ID pending set'
+          )
           assert(todoState.idField === 'id')
         })
         .catch(error => {
@@ -978,12 +974,10 @@ describe('Service Module - Actions', () => {
             brokenState.isUpdatePending === false,
             'pending state was cleared'
           )
-          assert(brokenState.ids.length === 0)
         }
       )
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnUpdate === null)
       assert(brokenState.isUpdatePending === true)
     })
@@ -1025,12 +1019,20 @@ describe('Service Module - Actions', () => {
               Object.assign({ description: 'Write a Vue app' }, dataChanged)
             ])
             .then(responseFromPatch => {
-              assert(todoState.ids.length === 1)
               assert(todoState.errorOnPatch === null)
               assert(todoState.isPatchPending === false)
-              assert(store.getters['my-todos/isPatchPendingById'](0) === false, 'ID pending patch clear')
-              assert(store.getters['my-todos/isSavePendingById'](0) === false, 'ID pending save clear')
-              assert(store.getters['my-todos/isPendingById'](0) === false, 'ID pending clear')
+              assert(
+                store.getters['my-todos/isPatchPendingById'](0) === false,
+                'ID pending patch clear'
+              )
+              assert(
+                store.getters['my-todos/isSavePendingById'](0) === false,
+                'ID pending save clear'
+              )
+              assert(
+                store.getters['my-todos/isPendingById'](0) === false,
+                'ID pending clear'
+              )
               assert.deepEqual(
                 todoState.keyedById[responseFromPatch.id],
                 responseFromPatch
@@ -1039,12 +1041,20 @@ describe('Service Module - Actions', () => {
             })
 
           // Make sure proper state changes occurred before response
-          assert(todoState.ids.length === 1)
           assert(todoState.errorOnPatch === null)
           assert(todoState.isPatchPending === true)
-          assert(store.getters['my-todos/isPatchPendingById'](0) === true, 'ID pending patch set')
-          assert(store.getters['my-todos/isSavePendingById'](0) === true, 'ID pending save set')
-          assert(store.getters['my-todos/isPendingById'](0) === true, 'ID pending set')
+          assert(
+            store.getters['my-todos/isPatchPendingById'](0) === true,
+            'ID pending patch set'
+          )
+          assert(
+            store.getters['my-todos/isSavePendingById'](0) === true,
+            'ID pending save set'
+          )
+          assert(
+            store.getters['my-todos/isPendingById'](0) === true,
+            'ID pending set'
+          )
           assert(todoState.idField === 'id')
         })
     })
@@ -1107,12 +1117,20 @@ describe('Service Module - Actions', () => {
           actions.patch
             .call({ $store: store }, [0, { description: 'Write a Vue app' }])
             .then(responseFromPatch => {
-              assert(todoState.ids.length === 1)
               assert(todoState.errorOnPatch === null)
               assert(todoState.isPatchPending === false)
-              assert(store.getters['my-todos/isPatchPendingById'](0) === false, 'ID pending patch clear')
-              assert(store.getters['my-todos/isSavePendingById'](0) === false, 'ID pending save clear')
-              assert(store.getters['my-todos/isPendingById'](0) === false, 'ID pending clear')
+              assert(
+                store.getters['my-todos/isPatchPendingById'](0) === false,
+                'ID pending patch clear'
+              )
+              assert(
+                store.getters['my-todos/isSavePendingById'](0) === false,
+                'ID pending save clear'
+              )
+              assert(
+                store.getters['my-todos/isPendingById'](0) === false,
+                'ID pending clear'
+              )
               assert.deepEqual(
                 todoState.keyedById[responseFromPatch.id],
                 responseFromPatch
@@ -1121,12 +1139,20 @@ describe('Service Module - Actions', () => {
             })
 
           // Make sure proper state changes occurred before response
-          assert(todoState.ids.length === 1)
           assert(todoState.errorOnPatch === null)
           assert(todoState.isPatchPending === true)
-          assert(store.getters['my-todos/isPatchPendingById'](0) === true, 'ID pending patch set')
-          assert(store.getters['my-todos/isSavePendingById'](0) === true, 'ID pending save set')
-          assert(store.getters['my-todos/isPendingById'](0) === true, 'ID pending set')
+          assert(
+            store.getters['my-todos/isPatchPendingById'](0) === true,
+            'ID pending patch set'
+          )
+          assert(
+            store.getters['my-todos/isSavePendingById'](0) === true,
+            'ID pending save set'
+          )
+          assert(
+            store.getters['my-todos/isPendingById'](0) === true,
+            'ID pending set'
+          )
           assert(todoState.idField === 'id')
         })
     })
@@ -1157,12 +1183,10 @@ describe('Service Module - Actions', () => {
             brokenState.isPatchPending === false,
             'pending state was cleared'
           )
-          assert(brokenState.ids.length === 0)
         }
       )
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnPatch === null)
       assert(brokenState.isPatchPending === true)
     })
@@ -1189,12 +1213,20 @@ describe('Service Module - Actions', () => {
           actions.remove
             .call({ $store: store }, 0)
             .then(() => {
-              assert(todoState.ids.length === 0)
               assert(todoState.errorOnRemove === null)
               assert(todoState.isRemovePending === false)
-              assert(store.getters['my-todos/isRemovePendingById'](0) === false, 'ID pending remove clear')
-              assert(store.getters['my-todos/isSavePendingById'](0) === false, 'ID pending save clear')
-              assert(store.getters['my-todos/isPendingById'](0) === false, 'ID pending clear')
+              assert(
+                store.getters['my-todos/isRemovePendingById'](0) === false,
+                'ID pending remove clear'
+              )
+              assert(
+                store.getters['my-todos/isSavePendingById'](0) === false,
+                'ID pending save clear'
+              )
+              assert(
+                store.getters['my-todos/isPendingById'](0) === false,
+                'ID pending clear'
+              )
               assert.deepEqual(todoState.keyedById, {})
               done()
             })
@@ -1204,12 +1236,20 @@ describe('Service Module - Actions', () => {
             })
 
           // Make sure proper state changes occurred before response
-          assert(todoState.ids.length === 1)
           assert(todoState.errorOnRemove === null)
           assert(todoState.isRemovePending === true)
-          assert(store.getters['my-todos/isRemovePendingById'](0) === true, 'ID pending remove set')
-          assert(store.getters['my-todos/isSavePendingById'](0) === false, 'ID pending save clear')
-          assert(store.getters['my-todos/isPendingById'](0) === true, 'ID pending set')
+          assert(
+            store.getters['my-todos/isRemovePendingById'](0) === true,
+            'ID pending remove set'
+          )
+          assert(
+            store.getters['my-todos/isSavePendingById'](0) === false,
+            'ID pending save clear'
+          )
+          assert(
+            store.getters['my-todos/isPendingById'](0) === true,
+            'ID pending set'
+          )
           assert(todoState.idField === 'id')
         })
     })
@@ -1237,11 +1277,9 @@ describe('Service Module - Actions', () => {
           brokenState.isRemovePending === false,
           'pending state was cleared'
         )
-        assert(brokenState.ids.length === 0)
       })
 
       // Make sure proper state changes occurred before response
-      assert(brokenState.ids.length === 0)
       assert(brokenState.errorOnRemove === null)
       assert(brokenState.isRemovePending === true)
     })

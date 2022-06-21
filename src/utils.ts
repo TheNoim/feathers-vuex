@@ -294,17 +294,23 @@ export function getServiceCapitalization(servicePath) {
 }
 
 export function updateOriginal(original, newData) {
-  Object.keys(newData).forEach(key => {
+  const keys = Object.keys(newData)
+
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const key = keys[i]
+
     const newProp = newData[key]
     const oldProp = original[key]
     let shouldCopyProp = false
 
     if (newProp === oldProp) {
-      return
+      continue
     }
 
+    const originalHasOwnProperty = original.hasOwnProperty(key)
+
     // If the old item doesn't already have this property, update it
-    if (!original.hasOwnProperty(key)) {
+    if (!originalHasOwnProperty) {
       shouldCopyProp = true
       // If the old prop is null or undefined, and the new prop is neither
     } else if (
@@ -327,13 +333,13 @@ export function updateOriginal(original, newData) {
     }
 
     if (shouldCopyProp) {
-      if (original.hasOwnProperty(key)) {
+      if (originalHasOwnProperty) {
         original[key] = newProp
       } else {
         Vue.set(original, key, newProp)
       }
     }
-  })
+  }
 }
 
 export function getQueryInfo(
@@ -442,7 +448,9 @@ export function mergeWithAccessors(
   const destProps = Object.getOwnPropertyNames(dest)
   const sourceIsVueObservable = sourceProps.includes('__ob__')
   const destIsVueObservable = destProps.includes('__ob__')
-  sourceProps.forEach(key => {
+  for (let i = 0, len = sourceProps.length; i < len; i++) {
+    const key = sourceProps[i]
+
     const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
     const destDesc = Object.getOwnPropertyDescriptor(dest, key)
 
@@ -461,7 +469,7 @@ export function mergeWithAccessors(
     // If the destination is not writable, return. Also ignore blacklisted keys.
     // Must explicitly check if writable is false
     if ((destDesc && destDesc.writable === false) || blacklist.includes(key)) {
-      return
+      continue
     }
 
     // Handle Vue observable objects
@@ -490,7 +498,7 @@ export function mergeWithAccessors(
           }
         }
       }
-      return
+      continue
     }
 
     // Handle defining accessors
@@ -499,12 +507,12 @@ export function mergeWithAccessors(
       typeof sourceDesc.set === 'function'
     ) {
       Object.defineProperty(dest, key, sourceDesc)
-      return
+      continue
     }
 
     // Do not attempt to overwrite a getter in the dest object
     if (destDesc && typeof destDesc.get === 'function') {
-      return
+      continue
     }
 
     // Assign values
@@ -515,7 +523,7 @@ export function mergeWithAccessors(
       value = fastCopy(sourceDesc.value)
     }
     dest[key] = value || sourceDesc.value
-  })
+  }
   return dest
 }
 

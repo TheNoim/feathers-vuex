@@ -32,7 +32,7 @@ const defaultOptions = {
 /** Ensures value has EventEmitter instance props */
 function assertIsEventEmitter(val: unknown): asserts val is EventEmitter {
   if (
-    !Object.keys(EventEmitter.prototype).every((eeKey) =>
+    !Object.keys(EventEmitter.prototype).every(eeKey =>
       Object.prototype.hasOwnProperty.call(val, eeKey)
     )
   ) {
@@ -113,14 +113,8 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       } = this.constructor as typeof BaseModel
       const id = getId(data, idField)
       const hasValidId = id !== null && id !== undefined
-      const tempId =
-        data && data.hasOwnProperty(tempIdField) ? data[tempIdField] : undefined
-      const hasValidTempId = tempId !== null && tempId !== undefined
-      const copiesById = keepCopiesInStore
-        ? store?.state[namespace].copiesById
-        : copiesByIdOnModel
 
-      if (store?.state?.[namespace]?.replaceItems !== true) {
+      if (hasValidId && store?.state?.[namespace]?.replaceItems !== true) {
         const existingItem =
           hasValidId && !options.clone
             ? getFromStore.call(this.constructor, id)
@@ -133,6 +127,13 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
           return existingItem
         }
       }
+
+      const tempId =
+        data && data.hasOwnProperty(tempIdField) ? data[tempIdField] : undefined
+      const hasValidTempId = tempId !== null && tempId !== undefined
+      const copiesById = keepCopiesInStore
+        ? store?.state?.[namespace]?.copiesById
+        : copiesByIdOnModel
 
       // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
       const existingClone =
@@ -186,9 +187,9 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
     private getGetterWithId(getter: GetterName): unknown {
       const { _getters, idField, tempIdField } = this
         .constructor as typeof BaseModel
-      const id =
-        getId(this, idField) != null ? getId(this, idField) : this[tempIdField]
-      return _getters.call(this.constructor, getter, id)
+      const id = getId(this, idField)
+      const anyId = id != null ? id : this[tempIdField]
+      return _getters.call(this.constructor, getter, anyId)
     }
 
     get isCreatePending(): boolean {
@@ -208,11 +209,6 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
     }
     get isPending(): boolean {
       return this.getGetterWithId('isPendingById') as boolean
-    }
-
-    public static getId(record: Record<string, any>): string {
-      const { idField } = this.constructor as typeof BaseModel
-      return getId(record, idField)
     }
 
     public static find(params?: Params) {
@@ -292,7 +288,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const state = store.state[namespace]
       const commit = store.commit
       // Replace each plain object with a model instance.
-      Object.keys(state.keyedById).forEach((id) => {
+      Object.keys(state.keyedById).forEach(id => {
         const record = state.keyedById[id]
         commit(`${namespace}/removeItem`, record)
         commit(`${namespace}/addItem`, record)
@@ -307,9 +303,9 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       if (this.__isClone) {
         throw new Error('You cannot clone a copy')
       }
-      const id =
-        getId(this, idField) != null ? getId(this, idField) : this[tempIdField]
-      return this._clone(id, data)
+      const id = getId(this, idField)
+      const anyId = id != null ? id : this[tempIdField]
+      return this._clone(anyId, data)
     }
 
     private _clone(id, data = {}) {
@@ -340,11 +336,9 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
         .constructor as typeof BaseModel
 
       if (this.__isClone) {
-        const id =
-          getId(this, idField) != null
-            ? getId(this, idField)
-            : this[tempIdField]
-        _commit.call(this.constructor, 'resetCopy', id)
+        const id = getId(this, idField)
+        const anyId = id != null ? id : this[tempIdField]
+        _commit.call(this.constructor, 'resetCopy', anyId)
         return this
       } else {
         throw new Error('You cannot reset a non-copy')
@@ -358,13 +352,11 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const { idField, tempIdField, _commit, _getters } = this
         .constructor as typeof BaseModel
       if (this.__isClone) {
-        const id =
-          getId(this, idField) != null
-            ? getId(this, idField)
-            : this[tempIdField]
-        _commit.call(this.constructor, 'commitCopy', id)
+        const id = getId(this, idField)
+        const anyId = id != null ? id : this[tempIdField]
+        _commit.call(this.constructor, 'commitCopy', anyId)
 
-        return _getters.call(this.constructor, 'get', id)
+        return _getters.call(this.constructor, 'get', anyId)
       } else {
         throw new Error('You cannot call commit on a non-copy')
       }
@@ -423,7 +415,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const { idField, _dispatch } = this.constructor as typeof BaseModel
       const id = getId(this, idField)
 
-      if (id !== 0 && !id) {
+      if (id == null) {
         const error = new Error(
           `Missing ${idField} property. You must create the data before you can update with this data`
         )

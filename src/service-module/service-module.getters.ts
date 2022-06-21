@@ -20,10 +20,6 @@ export default function makeServiceGetters() {
     temps: state => Object.values(state.tempsById),
     copiesById: state => {
       if (state.keepCopiesInStore === false) {
-        const server = models[state.serverAlias]
-        if (!server) {
-          const hallo = ''
-        }
         const Model = models[state.serverAlias].byServicePath[state.servicePath]
 
         return Model.copiesById
