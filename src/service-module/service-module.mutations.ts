@@ -34,6 +34,10 @@ export type PendingIdServiceMethodName = Exclude<
 
 export default function makeServiceMutations() {
   function addItems(state, items) {
+    if (!Array.isArray(items)) {
+      throw new Error('You must provide an array to the `addItems` mutation.')
+    }
+
     const { serverAlias, idField, tempIdField, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
 
@@ -93,6 +97,12 @@ export default function makeServiceMutations() {
   }
 
   function updateItems(state, items) {
+    if (!Array.isArray(items)) {
+      throw new Error(
+        'You must provide an array to the `updateItems` mutation.'
+      )
+    }
+
     const { idField, replaceItems, addOnUpsert, serverAlias, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
 
@@ -148,7 +158,6 @@ export default function makeServiceMutations() {
           keyedById[id] = item
           // Vue.set(state.keyedById, id, item)
         }
-        continue
       }
     }
 
@@ -180,14 +189,7 @@ export default function makeServiceMutations() {
     updateItem(state, item) {
       updateItems(state, [item])
     },
-    updateItems(state, items) {
-      if (!Array.isArray(items)) {
-        throw new Error(
-          'You must provide an array to the `updateItems` mutation.'
-        )
-      }
-      updateItems(state, items)
-    },
+    updateItems,
 
     // Promotes temp to "real" item:
     // - adds _id to temp

@@ -370,9 +370,9 @@ export default function makeServiceActions({
 
       const isIdOk = id !== null && id !== undefined
 
-      if (options.Model && !(item instanceof options.Model)) {
-        item = new options.Model(item, { commit: false })
-      }
+      // if (options.Model && !(item instanceof options.Model)) {
+      //   item = new options.Model(item, { commit: false })
+      // }
 
       if (isIdOk) {
         if (state.keyedById[id]) {
@@ -380,8 +380,12 @@ export default function makeServiceActions({
         } else {
           commit('addItem', item)
         }
+      } else {
+        if (options.Model && !(item instanceof options.Model)) {
+          item = new options.Model(item)
+        }
       }
-      return item
+      return item && state.keyedById[id]
     }
   }
   /**
