@@ -455,17 +455,17 @@ export function mergeWithAccessors(
   source,
   _opts?: MergeWithAccessorsOptions
 ) {
-  const blacklist = _opts?.blacklist || defaultBlacklist
-  const suppressFastCopy = !!_opts?.suppressFastCopy
-
   const sourceProps = Object.getOwnPropertyNames(source)
   if (!sourceProps.length) {
     return dest
   }
 
-  const destProps = Object.getOwnPropertyNames(dest)
-  const sourceIsVueObservable = sourceProps.includes('__ob__')
-  const destIsVueObservable = destProps.includes('__ob__')
+  const blacklist = _opts?.blacklist || defaultBlacklist
+  const suppressFastCopy = !!_opts?.suppressFastCopy
+
+  const sourceIsVueObservable = '__ob__' in source
+  const destIsVueObservable = '__ob__' in dest
+
   for (let i = 0, len = sourceProps.length; i < len; i++) {
     const key = sourceProps[i]
 
