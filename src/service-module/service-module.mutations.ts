@@ -11,7 +11,8 @@ import {
   mergeWithAccessors,
   assignTempId,
   getId,
-  getQueryInfo
+  getQueryInfo,
+  isFeathersVuexInstance
 } from '../utils'
 import { globalModels as models } from './global-models'
 import _omit from 'lodash/omit'
@@ -171,7 +172,9 @@ export default function makeServiceMutations() {
     const id = getId(item, idField)
     const existingItem = state.keyedById[id]
     if (existingItem) {
-      mergeWithAccessors(existingItem, item)
+      mergeWithAccessors(existingItem, item, {
+        suppressFastCopy: !isFeathersVuexInstance(item)
+      })
     }
   }
 
