@@ -64,7 +64,6 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
     // Think of these as abstract static properties
     public static servicePath: string
     public static namespace: string
-    public static keepCopiesInStore = options.keepCopiesInStore
     // eslint-disable-next-line
     public static instanceDefaults(data: AnyData, ctx: ModelSetupContext) {
       return data
@@ -106,8 +105,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
       const {
         store,
-        keepCopiesInStore,
-        copiesById: copiesByIdOnModel,
+        copiesById,
         models,
         instanceDefaults,
         idField,
@@ -140,9 +138,6 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const tempId =
         data && data.hasOwnProperty(tempIdField) ? data[tempIdField] : undefined
       const hasValidTempId = tempId !== null && tempId !== undefined
-      const copiesById = keepCopiesInStore
-        ? store?.state?.[namespace]?.copiesById
-        : copiesByIdOnModel
 
       // If cloning and a clone already exists, update and return the original clone. Only one clone is allowed.
       const existingClone =
@@ -155,7 +150,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
           dest: existingClone,
           source: data
         })
-        return existingClone
+        return existingClone as BaseModel
       }
 
       // Mark as a clone
@@ -321,28 +316,19 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       }
       const id = getId(this, idField)
       const anyId = id != null ? id : this[tempIdField]
-      return this._clone(anyId, data)
+      return this._clone(anyId, data) as any
     }
 
     private _clone(id, data = {}) {
-      const { store, namespace, _commit, _getters } = this
-        .constructor as typeof BaseModel
-      const { keepCopiesInStore } = store.state[namespace]
+      const { _commit } = this.constructor as typeof BaseModel
 
       _commit.call(this.constructor, `createCopy`, id)
 
-      if (keepCopiesInStore) {
-        return Object.assign(
-          _getters.call(this.constructor, 'getCopyById', id),
-          data
-        )
-      } else {
-        // const { copiesById } = this.constructor as typeof BaseModel
-        return Object.assign(
-          (this.constructor as typeof BaseModel).copiesById[id],
-          data
-        )
-      }
+      // const { copiesById } = this.constructor as typeof BaseModel
+      return Object.assign(
+        (this.constructor as typeof BaseModel).copiesById[id],
+        data
+      )
     }
     /**
      * Reset a clone to match the instance in the store.

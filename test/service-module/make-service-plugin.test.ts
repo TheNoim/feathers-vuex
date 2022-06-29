@@ -72,7 +72,6 @@ describe('makeServicePlugin', function () {
       isPatchPending: false,
       isRemovePending: false,
       isUpdatePending: false,
-      keepCopiesInStore: false,
       debounceEventsTime: null,
       debounceEventsMaxWait: 1000,
       keyedById: {},

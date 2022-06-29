@@ -721,7 +721,6 @@ describe('Service Module', function () {
         isUpdatePending: false,
         isPatchPending: false,
         isRemovePending: false,
-        keepCopiesInStore: false,
         debounceEventsTime: null,
         debounceEventsMaxWait: 1000,
         keyedById: {},

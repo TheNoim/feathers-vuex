@@ -141,26 +141,8 @@ describe('Service Module - Getters', function () {
     })
   })
 
-  it('getCopyById with keepCopiesInStore: true', function () {
-    const state = {
-      keepCopiesInStore: true,
-      keyedById: {},
-      tempsById: {},
-      copiesById: {
-        1: { test: true }
-      }
-    }
-
-    const { getCopyById } = makeGetters(state)
-
-    const result = getCopyById(1)
-
-    assert(result.test, 'got the copy')
-  })
-
   it('getCopyById with keepCopiesInStore: false', function () {
     const state = {
-      keepCopiesInStore: false,
       servicePath: 'todos',
       serverAlias: 'my-getters-test',
       keyedById: {},
@@ -234,7 +216,6 @@ describe('Service Module - Getters', function () {
 
   it('find - no copies by default', function () {
     const state = {
-      keepCopiesInStore: false,
       servicePath: 'todos',
       serverAlias: 'my-getters-test',
       keyedById: {
@@ -275,40 +256,8 @@ describe('Service Module - Getters', function () {
     clearModels()
   })
 
-  it('find - with copies with keepCopiesInStore:true', function () {
-    const state = {
-      keepCopiesInStore: true,
-      idField: '_id',
-      keyedById: {
-        1: { _id: 1, test: true, __isClone: false },
-        2: { _id: 2, test: true, __isClone: false },
-        3: { _id: 3, test: true, __isClone: false }
-      },
-      tempsById: {},
-      copiesById: {
-        1: { _id: 1, test: true, __isClone: true }
-      }
-    }
-
-    const getters = makeGetters(state)
-    const params = { query: {}, copies: true }
-    const results = getters.find(params)
-
-    const expected = [
-      { _id: 1, test: true, __isClone: true },
-      { _id: 2, test: true, __isClone: false },
-      { _id: 3, test: true, __isClone: false }
-    ]
-
-    assert.deepEqual(results.data, expected, 'the list was correct')
-    assert(results.limit === 0, 'limit was correct')
-    assert(results.skip === 0, 'skip was correct')
-    assert(results.total === 3, 'total was correct')
-  })
-
   it('find - with copies with keepCopiesInStore:false', function () {
     const state = {
-      keepCopiesInStore: false,
       servicePath: 'todos',
       serverAlias: 'my-getters-test',
       idField: '_id',
@@ -352,7 +301,6 @@ describe('Service Module - Getters', function () {
 
   it('find - with copies and temps', function () {
     const state = {
-      keepCopiesInStore: false,
       servicePath: 'todos',
       serverAlias: 'my-getters-test',
       idField: '_id',

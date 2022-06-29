@@ -19,22 +19,12 @@ export default function makeServiceGetters() {
     list: state => Object.values(state.keyedById),
     temps: state => Object.values(state.tempsById),
     copiesById: state => {
-      if (state.keepCopiesInStore === false) {
-        const Model = models[state.serverAlias].byServicePath[state.servicePath]
-
-        return Model.copiesById
-      } else {
-        return state.copiesById
-      }
+      const Model = models[state.serverAlias].byServicePath[state.servicePath]
+      return Model.copiesById
     },
     copies: state => {
-      if (state.keepCopiesInStore) {
-        return Object.values(state.copiesById)
-      } else {
-        const Model = models[state.serverAlias].byServicePath[state.servicePath]
-
-        return Object.values(Model.copiesById)
-      }
+      const Model = models[state.serverAlias].byServicePath[state.servicePath]
+      return Object.values(Model.copiesById)
     },
     filterQueryOptions: state => {
       return {

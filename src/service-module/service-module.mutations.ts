@@ -225,14 +225,14 @@ export default function makeServiceMutations() {
       const isIdOk = idToBeRemoved !== null && idToBeRemoved !== undefined
 
       const Model = _get(models, `[${state.serverAlias}][${state.modelName}]`)
-      const copiesById = state.keepCopiesInStore
-        ? state.copiesById
-        : Model.copiesById
 
       if (isIdOk) {
         Vue.delete(state.keyedById, idToBeRemoved)
-        if (copiesById.hasOwnProperty(idToBeRemoved)) {
-          Vue.delete(copiesById, idToBeRemoved)
+        if (
+          Model?.copiesById &&
+          Model.copiesById.hasOwnProperty(idToBeRemoved)
+        ) {
+          Vue.delete(Model.copiesById, idToBeRemoved)
         }
       }
     },
@@ -271,14 +271,11 @@ export default function makeServiceMutations() {
         'byServicePath',
         state.servicePath
       ])
-      const copiesById = state.keepCopiesInStore
-        ? state.copiesById
-        : Model.copiesById
 
       idsToRemove.forEach(id => {
         Vue.delete(state.keyedById, id)
-        if (copiesById.hasOwnProperty(id)) {
-          Vue.delete(copiesById, id)
+        if (Model?.copiesById && Model.copiesById.hasOwnProperty(id)) {
+          Vue.delete(Model.copiesById, id)
         }
       })
     },
@@ -287,23 +284,19 @@ export default function makeServiceMutations() {
       state.keyedById = {}
       state.tempsById = {}
 
-      if (state.keepCopiesInStore) {
-        state.copiesById = {}
-      } else {
-        const Model = _get(models, [
-          state.serverAlias,
-          'byServicePath',
-          state.servicePath
-        ])
-        Object.keys(Model.copiesById).forEach(k =>
-          Vue.delete(Model.copiesById, k)
-        )
-      }
+      const Model = _get(models, [
+        state.serverAlias,
+        'byServicePath',
+        state.servicePath
+      ])
+      Object.keys(Model.copiesById).forEach(k =>
+        Vue.delete(Model.copiesById, k)
+      )
     },
 
     // Creates a copy of the record with the passed-in id, stores it in copiesById
     createCopy(state, id) {
-      const { servicePath, keepCopiesInStore, serverAlias } = state
+      const { servicePath, serverAlias } = state
       const current = state.keyedById[id] || state.tempsById[id]
       const Model = _get(models, [serverAlias, 'byServicePath', servicePath])
 
@@ -319,31 +312,25 @@ export default function makeServiceMutations() {
           : mergeWithAccessors({}, current)
       }
 
-      if (keepCopiesInStore) {
-        state.copiesById[id] = item
-      } else {
-        // Since it won't be added to the store, make it a Vue object
-        if (!item.hasOwnProperty('__ob__')) {
-          item = Vue.observable(item)
-        }
-        if (!Model.hasOwnProperty('copiesById')) {
-          Object.defineProperty(Model, 'copiesById', { value: {} })
-        }
-        Model.copiesById[id] = item
+      // Since it won't be added to the store, make it a Vue object
+      if (!item.hasOwnProperty('__ob__')) {
+        item = Vue.observable(item)
       }
+      if (!Model.hasOwnProperty('copiesById')) {
+        Object.defineProperty(Model, 'copiesById', { value: {} })
+      }
+      Model.copiesById[id] = item
     },
 
     // Resets the copy to match the original record, locally
     resetCopy(state, id) {
-      const { servicePath, keepCopiesInStore } = state
+      const { servicePath } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         servicePath
       ])
-      const copy = keepCopiesInStore
-        ? state.copiesById[id]
-        : Model && _get(Model, ['copiesById', id])
+      const copy = Model && _get(Model, ['copiesById', id])
 
       if (copy) {
         const original =
@@ -356,15 +343,13 @@ export default function makeServiceMutations() {
 
     // Deep assigns copy to original record, locally
     commitCopy(state, id) {
-      const { servicePath, keepCopiesInStore } = state
+      const { servicePath } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         servicePath
       ])
-      const copy = keepCopiesInStore
-        ? state.copiesById[id]
-        : Model && _get(Model, ['copiesById', id])
+      const copy = Model && _get(Model, ['copiesById', id])
 
       if (copy) {
         const original =
@@ -377,14 +362,13 @@ export default function makeServiceMutations() {
 
     // Removes the copy from copiesById
     clearCopy(state, id) {
-      const { keepCopiesInStore } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         state.servicePath
       ])
 
-      const copiesById = keepCopiesInStore ? state.copiesById : Model.copiesById
+      const copiesById = Model.copiesById
 
       if (copiesById[id]) {
         Vue.delete(copiesById, id)
