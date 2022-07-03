@@ -5,7 +5,7 @@ eslint
 */
 import { assert } from 'chai'
 import jsdom from 'jsdom-global'
-import Vue from 'vue/dist/vue'
+import Vue from 'vue'
 import Vuex from 'vuex'
 import feathersVuex, { FeathersVuex } from '../src/index'
 import makeFindMixin from '../src/make-find-mixin'
@@ -65,35 +65,47 @@ describe('Find Mixin', function () {
       template: `<div></div>`
     }).$mount()
 
+    // @ts-ignore
     assert.deepEqual(vm.todos, [], 'todos prop was empty array')
     assert(
       vm.hasOwnProperty('todosPaginationData'),
       'pagination data prop was present, even if undefined'
     )
+    // @ts-ignore
     assert(vm.todosServiceName === 'todos', 'service name was correct')
+    // @ts-ignore
     assert(vm.isFindTodosPending === false, 'loading boolean is in place')
     assert(
+      // @ts-ignore
       vm.haveTodosBeenRequestedOnce === false,
       'requested once boolean is in place'
     )
+    // @ts-ignore
     assert(vm.haveTodosLoadedOnce === false, 'loaded once boolean is in place')
+    // @ts-ignore
     assert(typeof vm.findTodos === 'function', 'the find action is in place')
+    // @ts-ignore
     assert(vm.todosLocal === false, 'local boolean is false by default')
     assert(
+      // @ts-ignore
       typeof vm.$options.created[0] === 'function',
       'created lifecycle hook function is in place given that local is false'
     )
     assert(
+      // @ts-ignore
       vm.todosQid === 'default',
       'the default query identifier is in place'
     )
+    // @ts-ignore
     assert(vm.todosQueryWhen === true, 'the default queryWhen is true')
     // assert(vm.todosWatch.length === 0, 'the default watch is an empty array')
     assert(
+      // @ts-ignore
       vm.todosParams === undefined,
       'no params are in place by default, must be specified by the user'
     )
     assert(
+      // @ts-ignore
       vm.todosFetchParams === undefined,
       'no fetch params are in place by default, must be specified by the user'
     )
@@ -129,30 +141,39 @@ describe('Find Mixin', function () {
       template: `<div></div>`
     }).$mount()
 
+    // @ts-ignore
     assert.deepEqual(vm.items, [], 'items prop was empty array')
     assert(
       vm.hasOwnProperty('servicePaginationData'),
       'pagination data prop was present, even if undefined'
     )
+    // @ts-ignore
     assert(vm.serviceServiceName === 'tasks', 'service name was correct')
+    // @ts-ignore
     assert(vm.isFindServicePending === false, 'loading boolean is in place')
+    // @ts-ignore
     assert(typeof vm.findService === 'function', 'the find action is in place')
+    // @ts-ignore
     assert(vm.serviceLocal === true, 'local boolean is set to true')
     assert(
       typeof vm.$options.created === 'undefined',
       'created lifecycle hook function is NOT in place given that local is true'
     )
     assert(
+      // @ts-ignore
       vm.serviceQid === 'default',
       'the default query identifier is in place'
     )
+    // @ts-ignore
     assert(vm.serviceQueryWhen === true, 'the default queryWhen is true')
     // assert(vm.tasksWatch.length === 0, 'the default watch is an empty array')
     assert(
+      // @ts-ignore
       vm.serviceParams === undefined,
       'no params are in place by default, must be specified by the user'
     )
     assert(
+      // @ts-ignore
       vm.serviceFetchParams === undefined,
       'no fetch params are in place by default, must be specified by the user'
     )

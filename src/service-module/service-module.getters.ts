@@ -7,7 +7,7 @@ import sift from 'sift'
 import { filterQuery, sorter, select } from '@feathersjs/adapter-commons'
 import { globalModels as models } from './global-models'
 import _omit from 'lodash/omit'
-import { unref } from '@vue/composition-api'
+import { unref } from 'vue'
 import { ServiceState } from '..'
 import { Id } from '@feathersjs/feathers'
 
