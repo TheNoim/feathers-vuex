@@ -13,10 +13,11 @@ import {
 import debounce from 'lodash/debounce'
 import { getItemsFromQueryInfo, getQueryInfo, Params, Paginated } from './utils'
 import { ModelStatic, Model } from './service-module/types'
+import type { Instance, Class } from './type'
 import { deepEqual as _isEqual } from 'fast-equals'
 
-interface UseFindOptions {
-  model: ModelStatic
+interface UseFindOptions<C extends Class<Model> & ModelStatic> {
+  model: C
   params: Params | Ref<Params>
   fetchParams?: Params | Ref<Params>
   queryWhen?: Ref<boolean>
@@ -52,10 +53,11 @@ interface UseFindData<M> {
 const unwrapParams = (params: Params | Ref<Params>): Params =>
   isRef(params) ? params.value : params
 
-export default function find<M extends Model = Model>(
-  options: UseFindOptions
-): UseFindData<M> {
-  const defaults: UseFindOptions = {
+export default function find<
+  C extends Class<Model> & ModelStatic,
+  I extends Instance<C> = Instance<C>
+>(options: UseFindOptions<C>): UseFindData<I> {
+  const defaults: UseFindOptions<C> = {
     model: null,
     params: null,
     qid: 'default',
@@ -104,7 +106,7 @@ export default function find<M extends Model = Model>(
   })
   const computes = {
     // The find getter
-    items: computed<M[]>(() => {
+    items: computed<I[]>(() => {
       const getterParams = unwrapParams(params)
 
       if (getterParams) {
@@ -136,13 +138,13 @@ export default function find<M extends Model = Model>(
     servicePath: computed<string>(() => model.servicePath)
   }
 
-  function find(params?: Params | Ref<Params>): Promise<M[] | Paginated<M>> {
+  function find(params?: Params | Ref<Params>): Promise<I[] | Paginated<I>> {
     params = unwrapParams(params)
     if (queryWhen.value && !state.isLocal) {
       state.isPending = true
       state.haveBeenRequested = true
 
-      return model.find<M>(params).then(response => {
+      return model.find<I>(params).then((response) => {
         // To prevent thrashing, only clear error on response, not on initial request.
         state.error = null
         state.haveLoaded = true

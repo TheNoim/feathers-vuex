@@ -11,10 +11,11 @@ import {
   Ref
 } from 'vue'
 import { Params } from './utils'
-import { ModelStatic, Model, Id } from './service-module/types'
+import { Id, ModelStatic, Model } from './service-module/types'
+import type { Instance, Class } from './type'
 
-interface UseGetOptions {
-  model: ModelStatic
+interface UseGetOptions<C extends Class<Model> & ModelStatic> {
+  model: C
   id: null | string | number | Ref<null> | Ref<string> | Ref<number>
   params?: Params | Ref<Params>
   queryWhen?: Ref<boolean>
@@ -39,8 +40,11 @@ interface UseGetData<M> {
   get(id: Id, params?: Params): Promise<M | undefined>
 }
 
-export default function get<M extends Model = Model>(options: UseGetOptions): UseGetData<M> {
-  const defaults: UseGetOptions = {
+export default function get<
+  C extends Class<Model> & ModelStatic,
+  I extends Instance<C> = Instance<C>
+>(options: UseGetOptions<C>): UseGetData<I> {
+  const defaults: UseGetOptions<C> = {
     model: null,
     id: null,
     params: null,
@@ -84,17 +88,15 @@ export default function get<M extends Model = Model>(options: UseGetOptions): Us
         ? params
         : { ...params }
       if (getterParams != null) {
-        return model.getFromStore<M>(getterId, getterParams) || null
+        return model.getFromStore<I>(getterId, getterParams) || null
       } else {
-        return model.getFromStore<M>(getterId) || null
+        return model.getFromStore<I>(getterId) || null
       }
     }),
     servicePath: computed(() => model.servicePath)
   }
 
-
-
-  function get(id: Id, params?: Params): Promise<M | undefined> {
+  function get(id: Id, params?: Params): Promise<I | undefined> {
     const idToUse = isRef<Id>(id) ? id.value : id
     const paramsToUse = isRef(params) ? params.value : params
 
@@ -108,12 +110,12 @@ export default function get<M extends Model = Model>(options: UseGetOptions): Us
           : model.get(idToUse)
 
       return promise
-        .then(response => {
+        .then((response) => {
           state.isPending = false
           state.hasLoaded = true
           return response
         })
-        .catch(error => {
+        .catch((error) => {
           state.isPending = false
           state.error = error
           return error
