@@ -2,22 +2,15 @@
 eslint
 @typescript-eslint/no-explicit-any: 0
 */
-import {
-  computed,
-  isRef,
-  reactive,
-  Ref,
-  toRefs,
-  watch
-} from 'vue'
+import { computed, isRef, reactive, Ref, toRefs, watch } from 'vue'
 import debounce from 'lodash/debounce'
 import { getItemsFromQueryInfo, getQueryInfo, Params, Paginated } from './utils'
 import { ModelStatic, Model } from './service-module/types'
-import type { Instance, Class } from './type'
+import type { Class } from './type'
 import { deepEqual as _isEqual } from 'fast-equals'
 
-interface UseFindOptions<C extends Class<Model> & ModelStatic> {
-  model: C
+interface UseFindOptions<C> {
+  model: Class<C & Model> & ModelStatic
   params: Params | Ref<Params>
   fetchParams?: Params | Ref<Params>
   queryWhen?: Ref<boolean>
@@ -53,10 +46,7 @@ interface UseFindData<M> {
 const unwrapParams = (params: Params | Ref<Params>): Params =>
   isRef(params) ? params.value : params
 
-export default function find<
-  C extends Class<Model> & ModelStatic,
-  I extends Instance<C> = Instance<C>
->(options: UseFindOptions<C>): UseFindData<I> {
+export default function find<C>(options: UseFindOptions<C>): UseFindData<C> {
   const defaults: UseFindOptions<C> = {
     model: null,
     params: null,
@@ -106,7 +96,7 @@ export default function find<
   })
   const computes = {
     // The find getter
-    items: computed<I[]>(() => {
+    items: computed<C[]>(() => {
       const getterParams = unwrapParams(params)
 
       if (getterParams) {
@@ -138,13 +128,13 @@ export default function find<
     servicePath: computed<string>(() => model.servicePath)
   }
 
-  function find(params?: Params | Ref<Params>): Promise<I[] | Paginated<I>> {
+  function find(params?: Params | Ref<Params>): Promise<C[] | Paginated<C>> {
     params = unwrapParams(params)
     if (queryWhen.value && !state.isLocal) {
       state.isPending = true
       state.haveBeenRequested = true
 
-      return model.find<I>(params).then((response) => {
+      return model.find<C & Model>(params).then((response) => {
         // To prevent thrashing, only clear error on response, not on initial request.
         state.error = null
         state.haveLoaded = true

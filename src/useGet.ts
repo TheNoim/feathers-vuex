@@ -2,20 +2,13 @@
 eslint
 @typescript-eslint/no-explicit-any: 0
 */
-import {
-  reactive,
-  computed,
-  toRefs,
-  isRef,
-  watch,
-  Ref
-} from 'vue'
+import { reactive, computed, toRefs, isRef, watch, Ref } from 'vue'
 import { Params } from './utils'
 import { Id, ModelStatic, Model } from './service-module/types'
-import type { Instance, Class } from './type'
+import type { Class } from './type'
 
-interface UseGetOptions<C extends Class<Model> & ModelStatic> {
-  model: C
+interface UseGetOptions<C> {
+  model: Class<C & Model> & ModelStatic
   id: null | string | number | Ref<null> | Ref<string> | Ref<number>
   params?: Params | Ref<Params>
   queryWhen?: Ref<boolean>
@@ -40,10 +33,7 @@ interface UseGetData<M> {
   get(id: Id, params?: Params): Promise<M | undefined>
 }
 
-export default function get<
-  C extends Class<Model> & ModelStatic,
-  I extends Instance<C> = Instance<C>
->(options: UseGetOptions<C>): UseGetData<I> {
+export default function get<C>(options: UseGetOptions<C>): UseGetData<C> {
   const defaults: UseGetOptions<C> = {
     model: null,
     id: null,
@@ -88,15 +78,15 @@ export default function get<
         ? params
         : { ...params }
       if (getterParams != null) {
-        return model.getFromStore<I>(getterId, getterParams) || null
+        return model.getFromStore<C & Model>(getterId, getterParams) || null
       } else {
-        return model.getFromStore<I>(getterId) || null
+        return model.getFromStore<C & Model>(getterId) || null
       }
     }),
     servicePath: computed(() => model.servicePath)
   }
 
-  function get(id: Id, params?: Params): Promise<I | undefined> {
+  function get(id: Id, params?: Params): Promise<C | undefined> {
     const idToUse = isRef<Id>(id) ? id.value : id
     const paramsToUse = isRef(params) ? params.value : params
 
