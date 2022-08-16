@@ -2,7 +2,7 @@ import {
   h,
   computed,
   watch
-} from '@vue/composition-api'
+} from 'vue'
 
 export default {
   name: 'FeathersVuexPagination',

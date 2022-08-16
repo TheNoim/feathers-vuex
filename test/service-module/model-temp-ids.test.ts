@@ -9,7 +9,7 @@ import feathersVuex from '../../src/index'
 import { feathersRestClient as feathersClient } from '../fixtures/feathers-client'
 import { clearModels } from '../../src/service-module/global-models'
 import { Service as MemoryService } from 'feathers-memory'
-import Vue from 'vue/dist/vue'
+import Vue from 'vue'
 import Vuex from 'vuex'
 import { makeStore } from '../test-utils'
 import ObjectID from 'bson-objectid'
@@ -431,7 +431,6 @@ describe('Models - Temp Ids', function () {
     store.commit('things/updateTemp', { id: 42, tempId: thing.__id })
     assert(thing._id === 42, 'thing got _id')
     assert(store.state.things.keyedById[42] === thing, 'thing is in keyedById')
-    assert(store.state.things.ids.includes(42), "thing's _id is in ids")
     assert(
       !store.state.things.tempsById[thing.__id],
       'thing is no longer in tempsById'
@@ -578,7 +577,7 @@ describe('Models - Temp Ids', function () {
     })
   })
 
-  it('Model pending status updated for tempIds and clones', async function() {
+  it('Model pending status updated for tempIds and clones', async function () {
     const { makeServicePlugin, BaseModel } = feathersVuex(feathersClient, {
       idField: '_id',
       serverAlias: 'temp-ids'

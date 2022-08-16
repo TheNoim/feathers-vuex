@@ -11,7 +11,8 @@ import {
   mergeWithAccessors,
   assignTempId,
   getId,
-  getQueryInfo
+  getQueryInfo,
+  isFeathersVuexInstance
 } from '../utils'
 import { globalModels as models } from './global-models'
 import _omit from 'lodash/omit'
@@ -34,20 +35,28 @@ export type PendingIdServiceMethodName = Exclude<
 
 export default function makeServiceMutations() {
   function addItems(state, items) {
+    if (!Array.isArray(items)) {
+      throw new Error('You must provide an array to the `addItems` mutation.')
+    }
+
     const { serverAlias, idField, tempIdField, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
-    const BaseModel = _get(models, [serverAlias, 'BaseModel'])
 
-    for (let item of items) {
+    let tempsById
+    let keyedById
+
+    for (let i = 0, n = items.length; i < n; i++) {
+      let item = items[i]
+
       const id = getId(item, idField)
       const isTemp = id === null || id === undefined
 
       // If the response contains a real id, remove isTemp
-      if (id != null) {
+      if (id != null && item.__isTemp) {
         delete item.__isTemp
       }
 
-      if (Model && !(item instanceof BaseModel) && !(item instanceof Model)) {
+      if (Model && !(item instanceof Model)) {
         item = new Model(item, { commit: false })
       }
 
@@ -57,39 +66,73 @@ export default function makeServiceMutations() {
           tempId = assignTempId(state, item)
         }
         item.__isTemp = true
-        Vue.set(state.tempsById, tempId, item)
-      } else {
-        // Only add the id if it's not already in the `ids` list.
-        if (!state.ids.includes(id)) {
-          state.ids.push(id)
+        if (items.length === 1) {
+          Vue.set(state.tempsById, tempId, item)
+          return
+        } else {
+          if (!tempsById) {
+            tempsById = {}
+          }
+          tempsById[tempId] = item
         }
-        Vue.set(state.keyedById, id, item)
+      } else {
+        if (items.length === 1) {
+          Vue.set(state.keyedById, id, item)
+          return
+        } else {
+          if (!keyedById) {
+            keyedById = {}
+          }
+          keyedById[id] = item
+        }
       }
+    }
+
+    if (tempsById) {
+      state.tempsById = Object.assign({}, state.tempsById, tempsById)
+    }
+
+    if (keyedById) {
+      state.keyedById = Object.assign({}, state.keyedById, keyedById)
     }
   }
 
   function updateItems(state, items) {
+    if (!Array.isArray(items)) {
+      throw new Error(
+        'You must provide an array to the `updateItems` mutation.'
+      )
+    }
+
     const { idField, replaceItems, addOnUpsert, serverAlias, modelName } = state
     const Model = _get(models, [serverAlias, modelName])
-    const BaseModel = _get(models, [state.serverAlias, 'BaseModel'])
 
-    for (let item of items) {
+    let keyedById
+
+    for (let i = 0, n = items.length; i < n; i++) {
+      let item = items[i]
+
       const id = getId(item, idField)
 
       // If the response contains a real id, remove isTemp
-      if (id != null) {
+      if (id != null && item.__isTemp) {
         delete item.__isTemp
       }
 
       // Update the record
       if (id !== null && id !== undefined) {
-        if (state.ids.includes(id)) {
+        if (state.keyedById[id]) {
           // Completely replace the item
           if (replaceItems) {
             if (Model && !(item instanceof Model)) {
               item = new Model(item)
             }
-            Vue.set(state.keyedById, id, item)
+            if (!keyedById) {
+              keyedById = {}
+            }
+
+            keyedById[id] = item
+            // Vue.set(state.keyedById, id, item)
             // Merge in changes
           } else {
             /**
@@ -99,11 +142,7 @@ export default function makeServiceMutations() {
              *
              * If there's no Model class, just call updateOriginal on the incoming data.
              */
-            if (
-              Model &&
-              !(item instanceof BaseModel) &&
-              !(item instanceof Model)
-            ) {
+            if (Model && !(item instanceof Model)) {
               item = new Model(item)
             } else {
               const original = state.keyedById[id]
@@ -113,11 +152,18 @@ export default function makeServiceMutations() {
 
           // if addOnUpsert then add the record into the state, else discard it.
         } else if (addOnUpsert) {
-          state.ids.push(id)
-          Vue.set(state.keyedById, id, item)
+          if (!keyedById) {
+            keyedById = {}
+          }
+
+          keyedById[id] = item
+          // Vue.set(state.keyedById, id, item)
         }
-        continue
       }
+    }
+
+    if (keyedById) {
+      state.keyedById = Object.assign({}, state.keyedById, keyedById)
     }
   }
 
@@ -126,7 +172,9 @@ export default function makeServiceMutations() {
     const id = getId(item, idField)
     const existingItem = state.keyedById[id]
     if (existingItem) {
-      mergeWithAccessors(existingItem, item)
+      mergeWithAccessors(existingItem, item, {
+        suppressFastCopy: !isFeathersVuexInstance(item)
+      })
     }
   }
 
@@ -144,14 +192,7 @@ export default function makeServiceMutations() {
     updateItem(state, item) {
       updateItems(state, [item])
     },
-    updateItems(state, items) {
-      if (!Array.isArray(items)) {
-        throw new Error(
-          'You must provide an array to the `updateItems` mutation.'
-        )
-      }
-      updateItems(state, items)
-    },
+    updateItems,
 
     // Promotes temp to "real" item:
     // - adds _id to temp
@@ -166,10 +207,6 @@ export default function makeServiceMutations() {
         // If an item already exists in the store from the `created` event firing
         // it will be replaced here
         Vue.set(state.keyedById, id, temp)
-        // Only add the id if it's not already in the `ids` list.
-        if (!state.ids.includes(id)) {
-          state.ids.push(id)
-        }
       }
 
       // Add _id to temp's clone as well if it exists
@@ -186,18 +223,16 @@ export default function makeServiceMutations() {
       const { idField } = state
       const idToBeRemoved = _isObject(item) ? getId(item, idField) : item
       const isIdOk = idToBeRemoved !== null && idToBeRemoved !== undefined
-      const index = state.ids.findIndex(i => i === idToBeRemoved)
 
       const Model = _get(models, `[${state.serverAlias}][${state.modelName}]`)
-      const copiesById = state.keepCopiesInStore
-        ? state.copiesById
-        : Model.copiesById
 
-      if (isIdOk && index !== null && index !== undefined) {
-        Vue.delete(state.ids, index)
+      if (isIdOk) {
         Vue.delete(state.keyedById, idToBeRemoved)
-        if (copiesById.hasOwnProperty(idToBeRemoved)) {
-          Vue.delete(copiesById, idToBeRemoved)
+        if (
+          Model?.copiesById &&
+          Model.copiesById.hasOwnProperty(idToBeRemoved)
+        ) {
+          Vue.delete(Model.copiesById, idToBeRemoved)
         }
       }
     },
@@ -230,72 +265,38 @@ export default function makeServiceMutations() {
       const idsToRemove = containsObjects
         ? items.map(item => getId(item, idField))
         : items
-      const mapOfIdsToRemove = idsToRemove.reduce((map, id) => {
-        map[id] = true
-        return map
-      }, {})
 
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         state.servicePath
       ])
-      const copiesById = state.keepCopiesInStore
-        ? state.copiesById
-        : Model.copiesById
 
       idsToRemove.forEach(id => {
         Vue.delete(state.keyedById, id)
-        if (copiesById.hasOwnProperty(id)) {
-          Vue.delete(copiesById, id)
+        if (Model?.copiesById && Model.copiesById.hasOwnProperty(id)) {
+          Vue.delete(Model.copiesById, id)
         }
-      })
-
-      // Get indexes to remove from the ids array.
-      const mapOfIndexesToRemove = state.ids.reduce((map, id, index) => {
-        if (mapOfIdsToRemove[id]) {
-          map[index] = true
-        }
-        return map
-      }, {})
-      // Remove highest indexes first, so the indexes don't change
-      const indexesInReverseOrder = Object.keys(mapOfIndexesToRemove).sort(
-        (a, b) => {
-          if (a < b) {
-            return 1
-          } else if (a > b) {
-            return -1
-          } else {
-            return 0
-          }
-        }
-      )
-      indexesInReverseOrder.forEach(indexInIdsArray => {
-        Vue.delete(state.ids, indexInIdsArray)
       })
     },
 
     clearAll(state) {
-      state.ids = []
       state.keyedById = {}
+      state.tempsById = {}
 
-      if (state.keepCopiesInStore) {
-        state.copiesById = {}
-      } else {
-        const Model = _get(models, [
-          state.serverAlias,
-          'byServicePath',
-          state.servicePath
-        ])
-        Object.keys(Model.copiesById).forEach(k =>
-          Vue.delete(Model.copiesById, k)
-        )
-      }
+      const Model = _get(models, [
+        state.serverAlias,
+        'byServicePath',
+        state.servicePath
+      ])
+      Object.keys(Model.copiesById).forEach(k =>
+        Vue.delete(Model.copiesById, k)
+      )
     },
 
     // Creates a copy of the record with the passed-in id, stores it in copiesById
     createCopy(state, id) {
-      const { servicePath, keepCopiesInStore, serverAlias } = state
+      const { servicePath, serverAlias } = state
       const current = state.keyedById[id] || state.tempsById[id]
       const Model = _get(models, [serverAlias, 'byServicePath', servicePath])
 
@@ -311,31 +312,25 @@ export default function makeServiceMutations() {
           : mergeWithAccessors({}, current)
       }
 
-      if (keepCopiesInStore) {
-        state.copiesById[id] = item
-      } else {
-        // Since it won't be added to the store, make it a Vue object
-        if (!item.hasOwnProperty('__ob__')) {
-          item = Vue.observable(item)
-        }
-        if (!Model.hasOwnProperty('copiesById')) {
-          Object.defineProperty(Model, 'copiesById', { value: {} })
-        }
-        Model.copiesById[id] = item
+      // Since it won't be added to the store, make it a Vue object
+      if (!item.hasOwnProperty('__ob__')) {
+        item = Vue.observable(item)
       }
+      if (!Model.hasOwnProperty('copiesById')) {
+        Object.defineProperty(Model, 'copiesById', { value: {} })
+      }
+      Model.copiesById[id] = item
     },
 
     // Resets the copy to match the original record, locally
     resetCopy(state, id) {
-      const { servicePath, keepCopiesInStore } = state
+      const { servicePath } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         servicePath
       ])
-      const copy = keepCopiesInStore
-        ? state.copiesById[id]
-        : Model && _get(Model, ['copiesById', id])
+      const copy = Model && _get(Model, ['copiesById', id])
 
       if (copy) {
         const original =
@@ -348,15 +343,13 @@ export default function makeServiceMutations() {
 
     // Deep assigns copy to original record, locally
     commitCopy(state, id) {
-      const { servicePath, keepCopiesInStore } = state
+      const { servicePath } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         servicePath
       ])
-      const copy = keepCopiesInStore
-        ? state.copiesById[id]
-        : Model && _get(Model, ['copiesById', id])
+      const copy = Model && _get(Model, ['copiesById', id])
 
       if (copy) {
         const original =
@@ -369,14 +362,13 @@ export default function makeServiceMutations() {
 
     // Removes the copy from copiesById
     clearCopy(state, id) {
-      const { keepCopiesInStore } = state
       const Model = _get(models, [
         state.serverAlias,
         'byServicePath',
         state.servicePath
       ])
 
-      const copiesById = keepCopiesInStore ? state.copiesById : Model.copiesById
+      const copiesById = Model.copiesById
 
       if (copiesById[id]) {
         Vue.delete(copiesById, id)

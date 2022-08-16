@@ -9,7 +9,7 @@ import {
   isRef,
   watch,
   Ref
-} from '@vue/composition-api'
+} from 'vue'
 import { Params } from './utils'
 import { ModelStatic, Model, Id } from './service-module/types'
 

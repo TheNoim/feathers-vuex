@@ -42,7 +42,6 @@ const defaults: FeathersVuexOptions = {
   idField: 'id', // The field in each record that will contain the id
   tempIdField: '__id',
   debug: false, // Set to true to enable logging messages.
-  keepCopiesInStore: false, // Set to true to store cloned copies in the store instead of on the Model.
   nameStyle: 'short', // Determines the source of the module name. 'short', 'path', or 'explicit'
   paramsForServer: ['$populateParams'], // Custom query operators that are ignored in the find getter, but will pass through to the server. $populateParams is for https://feathers-graph-populate.netlify.app/
   preferUpdate: false, // When true, calling model.save() will do an update instead of a patch.

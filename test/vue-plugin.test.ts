@@ -6,7 +6,7 @@ eslint
 import { assert } from 'chai'
 import feathersVuex, { FeathersVuex } from '../src/index'
 import { feathersRestClient as feathersClient } from './fixtures/feathers-client'
-import Vue from 'vue/dist/vue'
+import Vue from 'vue'
 import Vuex from 'vuex'
 
 // @ts-ignore
@@ -50,6 +50,7 @@ describe('Vue Plugin', function () {
       template: `<div></div>`
     }).$mount()
 
+    // @ts-ignore
     assert(vm.$FeathersVuex, 'registeredPlugin correctly')
   })
 })

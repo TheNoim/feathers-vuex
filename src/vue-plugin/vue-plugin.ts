@@ -13,7 +13,7 @@ import { globalModels } from '../service-module/global-models'
 import { GlobalModels } from '../service-module/types'
 
 // Augment global models onto VueConstructor and instance
-declare module 'vue/types/vue' {
+declare module 'vue' {
   interface VueConstructor {
     $FeathersVuex: GlobalModels
   }

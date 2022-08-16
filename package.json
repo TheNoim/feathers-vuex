@@ -1,8 +1,8 @@
 {
-  "name": "feathers-vuex",
+  "name": "@fratzinger/feathers-vuex-perf",
   "description": "FeathersJS, Vue, and Nuxt for the artisan developer",
-  "version": "3.16.0",
-  "homepage": "https:feathers-vuex.feathersjs-ecosystem.com",
+  "version": "4.0.1-10",
+  "homepage": "https://github.com/fratzinger/feathers-vuex",
   "main": "dist/",
   "module": "dist/",
   "types": "dist/",
@@ -14,20 +14,20 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/feathersjs-ecosystem/feathers-vuex.git"
+    "url": "https://github.com/fratzinger/feathers-vuex"
   },
   "author": {
-    "name": "Marshall Thompson",
-    "email": "marshall@creativeideal.net",
-    "url": "https://github.com/marshallswain"
+    "name": "Feathers Contributors",
+    "email": "22286818+fratzinger@users.noreply.github.com",
+    "url": "https://github.com/fratzinger"
   },
   "funding": {
     "type": "Github sponsor",
-    "url": "https://github.com/sponsors/marshallswain"
+    "url": "https://github.com/fratzinger/feathers-vuex"
   },
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/feathersjs-ecosystem/feathers-vuex/issues"
+    "url": "https://github.com/fratzinger/feathers-vuex/issues"
   },
   "engines": {
     "node": ">= 4.6.0"
@@ -35,13 +35,12 @@
   "scripts": {
     "prepublish": "npm run compile",
     "publish": "git push origin --tags && git push origin",
-    "release:pre": "npm version prerelease && npm publish --tag pre",
-    "release:patch": "npm version patch && npm publish",
-    "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish",
+    "release:pre": "npm run compile && npm version prerelease && npm publish --tag pre --access public",
+    "release:patch": "npm run compile && npm version patch && npm publish --access public",
+    "release:minor": "npm run compile && npm version minor && npm publish --access public",
+    "release:major": "npm run compile && npm version major && npm publish --access public",
     "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
-    "compile": "shx rm -rf lib/ && tsc && npm run lint-dist",
-    "lint-dist": "prettier --write \"dist/**/*.js\"",
+    "compile": "shx rm -rf lib/ && tsc",
     "watch": "shx rm -rf lib/ && babel --watch -d lib/ src/",
     "lint": "standard --fix",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
@@ -107,9 +106,6 @@
   "directories": {
     "lib": "lib"
   },
-  "peerDependencies": {
-    "@vue/composition-api": "*"
-  },
   "dependencies": {
     "@feathersjs/adapter-commons": "^4.5.2",
     "@feathersjs/commons": "^4.5.3",
@@ -122,6 +118,7 @@
     "debug": "^4.1.1",
     "events": "^3.1.0",
     "fast-copy": "^2.1.0",
+    "fast-equals": "^4.0.1",
     "fast-json-stable-stringify": "^2.1.0",
     "inflection": "^1.12.0",
     "jwt-decode": "^2.2.0",
@@ -146,7 +143,6 @@
     "@types/mocha": "^7.0.2",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
-    "@vue/composition-api": "^1.2.4",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^1.0.2",
@@ -182,10 +178,10 @@
     "steal-typescript": "^0.5.0",
     "testee": "^0.9.1",
     "ts-node": "^8.10.1",
-    "typescript": "^3.8.3",
-    "vue": "^2.6.11",
+    "typescript": "^4.7.4",
+    "vue": "^2.7.8",
     "vue-server-renderer": "^2.6.11",
-    "vue-template-compiler": "^2.6.11",
+    "vue-template-compiler": "^2.7.8",
     "vuepress": "^1.4.1",
     "vuepress-theme-default-prefers-color-scheme": "^1.0.7",
     "vuex": "^3.3.0"
