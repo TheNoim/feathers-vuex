@@ -5,8 +5,6 @@ eslint
 @typescript-eslint/no-empty-function: 0
 */
 import Vue from 'vue'
-import VueCompositionApi from '@vue/composition-api'
-Vue.use(VueCompositionApi)
 
 import jsdom from 'jsdom-global'
 import { assert } from 'chai'
@@ -17,7 +15,7 @@ import memory from 'feathers-memory'
 import Vuex from 'vuex'
 // import { mount, shallowMount } from '@vue/test-utils'
 // import InstrumentComponent from './InstrumentComponent'
-import { isRef } from '@vue/composition-api'
+import { isRef } from 'vue'
 import { HookContext } from '@feathersjs/feathers'
 jsdom()
 require('events').EventEmitter.prototype._maxListeners = 100

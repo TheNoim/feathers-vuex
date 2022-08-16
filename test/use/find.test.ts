@@ -5,8 +5,6 @@ eslint
 @typescript-eslint/no-empty-function: 0
 */
 import Vue from 'vue'
-import VueCompositionApi from '@vue/composition-api'
-Vue.use(VueCompositionApi)
 
 import jsdom from 'jsdom-global'
 import { assert } from 'chai'
@@ -15,7 +13,7 @@ import { feathersRestClient as feathersClient } from '../fixtures/feathers-clien
 import useFind from '../../src/useFind'
 import Vuex from 'vuex'
 // import { shallowMount } from '@vue/test-utils'
-import { computed, isRef } from '@vue/composition-api'
+import { computed, isRef } from 'vue'
 jsdom()
 require('events').EventEmitter.prototype._maxListeners = 100
 

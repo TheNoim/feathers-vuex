@@ -57,7 +57,6 @@ describe('makeModel / BaseModel', function () {
 
     // Static Methods
     const staticMethods = [
-      'getId',
       'find',
       'findInStore',
       'count',
@@ -117,7 +116,8 @@ describe('makeModel / BaseModel', function () {
     const m = new BaseModel()
     getterMethods.forEach(method => {
       assert(
-        typeof Object.getOwnPropertyDescriptor(Object.getPrototypeOf(m), method).get === 'function',
+        typeof Object.getOwnPropertyDescriptor(Object.getPrototypeOf(m), method)
+          .get === 'function',
         `has ${method} getter`
       )
     })

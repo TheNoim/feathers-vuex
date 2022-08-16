@@ -9,11 +9,12 @@ import {
   Ref,
   toRefs,
   watch
-} from '@vue/composition-api'
+} from 'vue'
 import debounce from 'lodash/debounce'
 import { getItemsFromQueryInfo, getQueryInfo, Params, Paginated } from './utils'
 import { ModelStatic, Model } from './service-module/types'
 import type { Instance, Class } from './type'
+import { deepEqual as _isEqual } from 'fast-equals'
 
 interface UseFindOptions<C extends Class<Model> & ModelStatic> {
   model: C
@@ -181,7 +182,10 @@ export default function find<
 
   watch(
     () => getFetchParams(),
-    () => {
+    (val, oldVal) => {
+      if (_isEqual(val, oldVal)) {
+        return
+      }
       findProxy()
     },
     { immediate }

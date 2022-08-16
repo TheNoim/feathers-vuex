@@ -10,8 +10,6 @@ import { MakeServicePluginOptions, Model } from './types'
 import { Id } from '@feathersjs/feathers'
 
 export interface ServiceStateExclusiveDefaults {
-  ids: string[]
-
   errorOnFind: any
   errorOnGet: any
   errorOnCreate: any
@@ -46,7 +44,6 @@ export interface ServiceStateExclusiveDefaults {
 
 export interface ServiceState<M extends Model = Model> {
   options: {}
-  ids: string[]
   autoRemove: boolean
   errorOnFind: any
   errorOnGet: any
@@ -115,7 +112,6 @@ export default function makeDefaultState(options: MakeServicePluginOptions) {
   ]
 
   const state: ServiceStateExclusiveDefaults = {
-    ids: [],
     keyedById: {},
     copiesById: {},
     tempsById: {}, // Really should be called tempsByTempId

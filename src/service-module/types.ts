@@ -2,7 +2,7 @@ import { Service, Id } from '@feathersjs/feathers'
 import { Params, Paginated } from '../utils'
 import { EventEmitter } from 'events'
 import { Store } from 'vuex'
-import { Ref } from '@vue/composition-api'
+import { Ref } from 'vue'
 
 export { Id } from '@feathersjs/feathers'
 
@@ -19,7 +19,6 @@ export interface FeathersVuexOptions {
   handleEvents?: HandleEvents
   idField?: string
   tempIdField?: string
-  keepCopiesInStore?: boolean
   debounceEventsTime?: number
   debounceEventsMaxWait?: number
   nameStyle?: string
@@ -57,7 +56,6 @@ export interface MakeServicePluginOptions {
   replaceItems?: boolean
   skipRequestIfExists?: boolean
   nameStyle?: string
-  keepCopiesInStore?: boolean
   debounceEventsTime?: number
   debounceEventsMaxWait?: number
 
@@ -71,9 +69,7 @@ export interface MakeServicePluginOptions {
   setupInstance?: (data: any, { models, store }) => {}
   handleEvents?: HandleEvents
 
-  extend?: (
-    options: ServicePluginExtendOptions
-  ) => {
+  extend?: (options: ServicePluginExtendOptions) => {
     state?: any
     getters?: any
     mutations?: any

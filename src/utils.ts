@@ -294,17 +294,23 @@ export function getServiceCapitalization(servicePath) {
 }
 
 export function updateOriginal(original, newData) {
-  Object.keys(newData).forEach(key => {
+  const keys = Object.keys(newData)
+
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const key = keys[i]
+
     const newProp = newData[key]
     const oldProp = original[key]
     let shouldCopyProp = false
 
     if (newProp === oldProp) {
-      return
+      continue
     }
 
+    const originalHasOwnProperty = original.hasOwnProperty(key)
+
     // If the old item doesn't already have this property, update it
-    if (!original.hasOwnProperty(key)) {
+    if (!originalHasOwnProperty) {
       shouldCopyProp = true
       // If the old prop is null or undefined, and the new prop is neither
     } else if (
@@ -327,13 +333,13 @@ export function updateOriginal(original, newData) {
     }
 
     if (shouldCopyProp) {
-      if (original.hasOwnProperty(key)) {
+      if (originalHasOwnProperty) {
         original[key] = newProp
       } else {
         Vue.set(original, key, newProp)
       }
     }
-  })
+  }
 }
 
 export function getQueryInfo(
@@ -433,17 +439,36 @@ export function isBaseModelInstance(item) {
   })
 }
 
+export function isFeathersVuexInstance(val) {
+  return !!(val.constructor.modelName || val.constructor.namespace)
+}
+
+const defaultBlacklist = ['__isClone', '__ob__']
+
+type MergeWithAccessorsOptions = {
+  blacklist?: string[]
+  suppressFastCopy?: boolean
+}
+
 export function mergeWithAccessors(
   dest,
   source,
-  blacklist = ['__isClone', '__ob__']
+  _opts?: MergeWithAccessorsOptions
 ) {
   const sourceProps = Object.getOwnPropertyNames(source)
-  const destProps = Object.getOwnPropertyNames(dest)
-  const sourceIsVueObservable = sourceProps.includes('__ob__')
-  const destIsVueObservable = destProps.includes('__ob__')
-  sourceProps.forEach(key => {
-    const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
+  if (!sourceProps.length) {
+    return dest
+  }
+
+  const blacklist = _opts?.blacklist || defaultBlacklist
+  const suppressFastCopy = !!_opts?.suppressFastCopy
+
+  const sourceIsVueObservable = '__ob__' in source
+  const destIsVueObservable = '__ob__' in dest
+
+  for (let i = 0, len = sourceProps.length; i < len; i++) {
+    const key = sourceProps[i]
+
     const destDesc = Object.getOwnPropertyDescriptor(dest, key)
 
     // if (Array.isArray(source[key]) && source[key].find(i => i.__ob__)) {
@@ -461,37 +486,31 @@ export function mergeWithAccessors(
     // If the destination is not writable, return. Also ignore blacklisted keys.
     // Must explicitly check if writable is false
     if ((destDesc && destDesc.writable === false) || blacklist.includes(key)) {
-      return
+      continue
     }
 
     // Handle Vue observable objects
     if (destIsVueObservable || sourceIsVueObservable) {
-      const isObject = _isObject(source[key])
-      const isFeathersVuexInstance =
-        isObject &&
-        !!(
-          source[key].constructor.modelName || source[key].constructor.namespace
-        )
       // Do not use fastCopy directly on a feathers-vuex BaseModel instance to keep from breaking reactivity.
-      if (isObject && !isFeathersVuexInstance) {
-        try {
-          dest[key] = fastCopy(source[key])
-        } catch (err) {
-          if (!err.message.includes('getter')) {
-            throw err
-          }
-        }
-      } else {
-        try {
-          dest[key] = source[key]
-        } catch (err) {
-          if (!err.message.includes('getter')) {
-            throw err
-          }
+      const val =
+        !suppressFastCopy &&
+        _isObject(source[key]) &&
+        !isFeathersVuexInstance(source[key])
+          ? fastCopy(source[key])
+          : source[key]
+
+      try {
+        dest[key] = val
+      } catch (err) {
+        if (!err.message.includes('getter')) {
+          throw err
         }
       }
-      return
+
+      continue
     }
+
+    const sourceDesc = Object.getOwnPropertyDescriptor(source, key)
 
     // Handle defining accessors
     if (
@@ -499,23 +518,26 @@ export function mergeWithAccessors(
       typeof sourceDesc.set === 'function'
     ) {
       Object.defineProperty(dest, key, sourceDesc)
-      return
+      continue
     }
 
     // Do not attempt to overwrite a getter in the dest object
     if (destDesc && typeof destDesc.get === 'function') {
-      return
+      continue
     }
 
     // Assign values
     // Do not allow sharing of deeply-nested objects between instances
     // Potentially breaks accessors on nested data. Needs recursion if this is an issue
     let value
-    if (_isObject(sourceDesc.value) && !isBaseModelInstance(sourceDesc.value)) {
-      value = fastCopy(sourceDesc.value)
+    if (
+      _isObject(sourceDesc.value) &&
+      !isFeathersVuexInstance(sourceDesc.value)
+    ) {
+      value = suppressFastCopy ? sourceDesc.value : fastCopy(sourceDesc.value)
     }
     dest[key] = value || sourceDesc.value
-  })
+  }
   return dest
 }
 

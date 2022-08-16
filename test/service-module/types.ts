@@ -5,7 +5,6 @@ eslint
 */
 export interface ServiceState {
   options: {}
-  ids: (string | number)[]
   autoRemove: boolean
   errorOnFind: any
   errorOnGet: any
@@ -34,7 +33,6 @@ export interface ServiceState {
 }
 
 export interface PaginationState {
-  ids: any
   limit: number
   skip: number
   ip: number

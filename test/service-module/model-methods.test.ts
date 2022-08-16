@@ -134,7 +134,6 @@ function makeContext() {
         Model: Person,
         servicePath: 'model-methods-persons',
         service: feathersClient.service('model-methods-persons'),
-        keepCopiesInStore: true,
         namespace: 'model-methods-persons'
       })
     ]
@@ -378,23 +377,6 @@ describe('Models - Methods', function () {
     )
   })
 
-  it('instance.remove removes cloned record from the store', async function () {
-    const { Person, store } = makeContext()
-    const person = new Person({ _id: 1, test: true })
-    const id = person._id
-
-    // @ts-ignore
-    const { copiesById } = store.state['model-methods-persons']
-
-    person.clone()
-
-    assert(copiesById[id], 'clone exists')
-
-    await person.remove()
-
-    assert(!copiesById[id], 'clone was removed')
-  })
-
   it('instance.remove removes cloned record from Model.copiesById', async function () {
     const { Task } = makeContext()
     const task = new Task({ _id: 2, test: true })
@@ -409,27 +391,10 @@ describe('Models - Methods', function () {
     assert(!Task.copiesById[id], 'clone was removed')
   })
 
-  it('instance.remove for temp record removes cloned record from the store', function () {
-    const { Person, store } = makeContext()
-    const person = new Person({ test: true })
-    const tempId = person.__id
-
-    // @ts-ignore
-    const { copiesById } = store.state['model-methods-persons']
-
-    person.clone()
-
-    assert(copiesById[tempId], 'clone exists')
-
-    person.remove()
-
-    assert(!copiesById[tempId], 'clone was removed')
-  })
-
   it('instance.remove for temp record removes cloned record from the Model.copiesById', function () {
     const { Task } = makeContext()
     const task = new Task({ test: true })
-    const tempId = task.__id
+    const tempId = task.__id as string
 
     task.clone()
 
@@ -446,19 +411,19 @@ describe('Models - Methods', function () {
     const id = person._id
 
     // @ts-ignore
-    const { copiesById, keyedById } = store.state['model-methods-persons']
+    const state = store.state['model-methods-persons']
 
     person.clone()
 
-    assert(copiesById[id], 'clone exists')
-    assert(keyedById[id], 'original exists')
+    assert(Person.copiesById[id], 'clone exists')
+    assert(state.keyedById[id], 'original exists')
 
-    const clone = copiesById[id]
+    const clone = Person.copiesById[id]
 
-    await clone.remove()
+    await clone?.remove()
 
-    assert(!copiesById[id], 'clone was removed')
-    assert(!keyedById[id], 'original was removed')
+    assert(!Person.copiesById[id], 'clone was removed')
+    assert(!state.keyedById[id], 'original was removed')
   })
 
   it('instance methods still available in store data after updateItem mutation (or socket event)', async function () {
@@ -526,7 +491,7 @@ describe('Models - Methods', function () {
     assert(json, 'got json')
   })
 
-  it('Model pending status sets/clears for create/update/patch/remove', async function() {
+  it('Model pending status sets/clears for create/update/patch/remove', async function () {
     const { makeServicePlugin, BaseModel } = feathersVuex(feathersClient, {
       idField: '_id',
       serverAlias: 'model-methods'
@@ -549,7 +514,7 @@ describe('Models - Methods', function () {
     // Create instance
     const thing = new PendingThing({ description: 'pending test' })
     const clone = thing.clone()
-    assert(!!thing.__id, "thing has a tempId")
+    assert(!!thing.__id, 'thing has a tempId')
     assert(clone.__id === thing.__id, "clone has thing's tempId")
 
     // Manually set the result in a hook to simulate the server request.
@@ -563,7 +528,10 @@ describe('Models - Methods', function () {
             assert(thing.isSavePending === true, 'isSavePending set')
             assert(thing.isPending === true, 'isPending set')
             // Check clone's pending status
-            assert(clone.isCreatePending === true, 'isCreatePending set on clone')
+            assert(
+              clone.isCreatePending === true,
+              'isCreatePending set on clone'
+            )
             assert(clone.isSavePending === true, 'isSavePending set on clone')
             assert(clone.isPending === true, 'isPending set on clone')
             return context
@@ -577,7 +545,10 @@ describe('Models - Methods', function () {
             assert(thing.isSavePending === true, 'isSavePending set')
             assert(thing.isPending === true, 'isPending set')
             // Check clone's pending status
-            assert(clone.isUpdatePending === true, 'isUpdatePending set on clone')
+            assert(
+              clone.isUpdatePending === true,
+              'isUpdatePending set on clone'
+            )
             assert(clone.isSavePending === true, 'isSavePending set on clone')
             assert(clone.isPending === true, 'isPending set on clone')
             return context
@@ -602,11 +573,20 @@ describe('Models - Methods', function () {
             context.result = { ...context.data }
             // Check pending status
             assert(thing.isRemovePending === true, 'isRemovePending set')
-            assert(thing.isSavePending === false, 'isSavePending clear on remove')
+            assert(
+              thing.isSavePending === false,
+              'isSavePending clear on remove'
+            )
             assert(thing.isPending === true, 'isPending set')
             // Check clone's pending status
-            assert(clone.isRemovePending === true, 'isRemovePending set on clone')
-            assert(clone.isSavePending === false, 'isSavePending clear on remove on clone')
+            assert(
+              clone.isRemovePending === true,
+              'isRemovePending set on clone'
+            )
+            assert(
+              clone.isSavePending === false,
+              'isSavePending clear on remove on clone'
+            )
             assert(clone.isPending === true, 'isPending set on clone')
             return context
           }
