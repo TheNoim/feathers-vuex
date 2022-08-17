@@ -50,7 +50,7 @@ describe('Service Module - Getters', function () {
       isPendingById
     } = getters
 
-    makeGetters = state => {
+    makeGetters = (state) => {
       const justState = {
         copies: copies(state),
         copiesById: copiesById(state),
@@ -187,6 +187,21 @@ describe('Service Module - Getters', function () {
     assert(result.__id === tempId)
   })
 
+  it('find - with limit: -1', function () {
+    const { state, items } = this
+    const params = { query: { $limit: -1 } }
+    const results = this.getters.find(params)
+
+    assert.deepEqual(
+      results.data,
+      items.filter((i) => i._id),
+      'the list was correct'
+    )
+    assert(results.limit === 0, 'limit was correct')
+    assert(results.skip === 0, 'skip was correct')
+    assert(results.total === 3, 'total was correct')
+  })
+
   it('find - no temps by default', function () {
     const { state, items } = this
     const params = { query: {} }
@@ -194,7 +209,7 @@ describe('Service Module - Getters', function () {
 
     assert.deepEqual(
       results.data,
-      items.filter(i => i._id),
+      items.filter((i) => i._id),
       'the list was correct'
     )
     assert(results.limit === 0, 'limit was correct')
@@ -246,7 +261,7 @@ describe('Service Module - Getters', function () {
 
     assert.deepEqual(
       results.data,
-      _values(state.keyedById).filter(i => !i.__isClone),
+      _values(state.keyedById).filter((i) => !i.__isClone),
       'the list was correct'
     )
     assert(results.limit === 0, 'limit was correct')
@@ -473,11 +488,11 @@ describe('Service Module - Getters', function () {
     const results = this.getters.find(params)
 
     assert(results.data.length === 3, 'the length was correct')
-    results.data.forEach(result => {
+    results.data.forEach((result) => {
       assert(Object.keys(result).length <= 1, 'only one field was returned')
     })
     assert.equal(
-      results.data.filter(i => i.otherField).length,
+      results.data.filter((i) => i.otherField).length,
       3,
       'three records have the field.'
     )
@@ -496,7 +511,7 @@ describe('Service Module - Getters', function () {
     const results = this.getters.find(params)
 
     results.data
-      .map(i => i.age)
+      .map((i) => i.age)
       .reduce((oldest, current) => {
         assert(current > oldest, 'age should have been older than previous')
         return current
@@ -513,7 +528,7 @@ describe('Service Module - Getters', function () {
     const results = this.getters.find(params)
 
     results.data
-      .map(i => i.age)
+      .map((i) => i.age)
       .reduce((oldest, current) => {
         assert(current < oldest, 'age should have been younger than previous')
         return current
@@ -530,7 +545,7 @@ describe('Service Module - Getters', function () {
     const results = this.getters.find(params)
 
     results.data
-      .map(i => i.teethRemaining)
+      .map((i) => i.teethRemaining)
       .reduce((oldest, current) => {
         assert(
           current > oldest,
@@ -550,7 +565,7 @@ describe('Service Module - Getters', function () {
     const results = this.getters.find(params)
 
     results.data
-      .map(i => i.teethRemaining)
+      .map((i) => i.teethRemaining)
       .reduce((oldest, current) => {
         assert(
           current < oldest,

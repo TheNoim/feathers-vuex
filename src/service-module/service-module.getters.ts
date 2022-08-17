@@ -16,22 +16,22 @@ const additionalOperators = ['$elemMatch']
 
 export default function makeServiceGetters() {
   return {
-    list: state => Object.values(state.keyedById),
-    temps: state => Object.values(state.tempsById),
-    copiesById: state => {
+    list: (state) => Object.values(state.keyedById),
+    temps: (state) => Object.values(state.tempsById),
+    copiesById: (state) => {
       const Model = models[state.serverAlias].byServicePath[state.servicePath]
       return Model.copiesById
     },
-    copies: state => {
+    copies: (state) => {
       const Model = models[state.serverAlias].byServicePath[state.servicePath]
       return Object.values(Model.copiesById)
     },
-    filterQueryOptions: state => {
+    filterQueryOptions: (state) => {
       return {
         operators: additionalOperators.concat(state.whitelist)
       }
     },
-    find: (state, getters) => _params => {
+    find: (state, getters) => (_params) => {
       const params = unref(_params) || {}
 
       const { paramsForServer, idField } = state
@@ -55,6 +55,16 @@ export default function makeServiceGetters() {
         }
       }
 
+      // $limit: -1 is a special case for pagination
+      // see https://hooks-common.feathersjs.com/hooks.html#disablepagination
+      if (q.$limit === -1) {
+        if (!copied) {
+          q = Object.assign({}, q)
+        }
+
+        delete q.$limit
+      }
+
       const { query, filters } = filterQuery(q, getters.filterQueryOptions)
 
       let values = getters.list.slice(0)
@@ -68,7 +78,7 @@ export default function makeServiceGetters() {
       if (params.copies) {
         const copiesById = getters.copiesById
         // replace keyedById value with existing clone value
-        values = values.map(value => copiesById[value[idField]] || value)
+        values = values.map((value) => copiesById[value[idField]] || value)
       }
 
       const total = values.length
@@ -94,7 +104,7 @@ export default function makeServiceGetters() {
         data: values
       }
     },
-    count: (state, getters) => _params => {
+    count: (state, getters) => (_params) => {
       const params = unref(_params) || {}
 
       const cleanQuery = _omit(params.query, FILTERS)
@@ -117,7 +127,7 @@ export default function makeServiceGetters() {
 
         return tempRecord || null
       },
-    getCopyById: (state, getters) => id => {
+    getCopyById: (state, getters) => (id) => {
       return getters.copiesById[id]
     },
 
