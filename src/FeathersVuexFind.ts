@@ -1,7 +1,8 @@
 import { randomString, getQueryInfo } from './utils'
 import _get from 'lodash/get'
+import { defineComponent } from 'vue-demi'
 
-export default {
+export default defineComponent({
   props: {
     service: {
       type: String,
@@ -133,7 +134,7 @@ export default {
 
           return this.$store
             .dispatch(`${this.service}/find`, params)
-            .then((response) => {
+            .then(response => {
               this.isFindPending = false
               const { queryId, pageId } = getQueryInfo(params, response)
               this.queryId = queryId
@@ -171,7 +172,7 @@ export default {
     const watch = Array.isArray(this.watch) ? this.watch : [this.watch]
 
     if (this.fetchQuery || this.query || this.params) {
-      watch.forEach((prop) => {
+      watch.forEach(prop => {
         if (typeof prop !== 'string') {
           throw new Error(`Values in the 'watch' array must be strings.`)
         }
@@ -194,4 +195,4 @@ export default {
   render() {
     return this.$scopedSlots.default(this.scope)
   }
-}
+})

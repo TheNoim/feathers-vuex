@@ -59,13 +59,18 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true,
-      "mocha": true
+      "node": true
     },
     "extends": [
+      "eslint:recommended",
       "plugin:@typescript-eslint/recommended",
-      "prettier/@typescript-eslint",
       "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "ignorePatterns": [
+      "dist/**/*"
     ],
     "rules": {
       "linebreak-style": [
@@ -81,13 +86,16 @@
           "trailingComma": "none",
           "arrowParens": "avoid"
         }
-      ]
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "error"
+      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-prototype-builtins": "off",
+      "@typescript-eslint/ban-types": "off",
+      "@typescript-eslint/ban-ts-comment": "off"
     },
-    "parserOptions": {
-      "parser": "@typescript-eslint/parser",
-      "ecmaVersion": 2018,
-      "sourceType": "module"
-    }
+    "parser": "@typescript-eslint/parser"
   },
   "steal": {
     "map": {
@@ -107,22 +115,22 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^4.5.2",
-    "@feathersjs/commons": "^4.5.3",
-    "@feathersjs/errors": "^4.5.3",
-    "@types/feathersjs__feathers": "^3.1.5",
-    "@types/inflection": "^1.5.28",
-    "@types/lodash": "^4.14.150",
-    "@types/npm": "^2.0.31",
+    "@feathersjs/adapter-commons": "^4.5.15",
+    "@feathersjs/commons": "^4.5.15",
+    "@feathersjs/errors": "^4.5.15",
+    "@types/feathersjs__feathers": "^3.1.8",
+    "@types/inflection": "^1.13.0",
+    "@types/lodash": "^4.14.184",
+    "@types/npm": "^7.19.0",
     "bson-objectid": "^1.3.0",
-    "debug": "^4.1.1",
-    "events": "^3.1.0",
-    "fast-copy": "^2.1.0",
+    "debug": "^4.3.4",
+    "events": "^3.3.0",
+    "fast-copy": "^2.1.3",
     "fast-equals": "^4.0.1",
     "fast-json-stable-stringify": "^2.1.0",
-    "inflection": "^1.12.0",
+    "inflection": "^1.13.2",
     "jwt-decode": "^2.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "lodash.isobject": "^3.0.2",
     "lodash.isplainobject": "^4.0.6",
     "lodash.merge": "^4.6.2",
@@ -130,60 +138,48 @@
     "lodash.pick": "^4.4.0",
     "lodash.trim": "^4.5.1",
     "serialize-error": "^5.0.0",
-    "sift": "^9.0.4"
+    "sift": "^9.0.4",
+    "vue-demi": "latest"
   },
   "devDependencies": {
-    "@feathersjs/authentication-client": "^4.5.4",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
+    "@feathersjs/authentication-client": "^4.5.15",
     "@feathersjs/authentication-jwt": "^2.0.10",
-    "@feathersjs/client": "^4.5.4",
-    "@feathersjs/feathers": "^4.5.3",
-    "@feathersjs/rest-client": "^4.5.4",
-    "@feathersjs/socketio-client": "^4.5.4",
-    "@types/chai": "^4.2.11",
-    "@types/mocha": "^7.0.2",
-    "@typescript-eslint/eslint-plugin": "^2.31.0",
-    "@typescript-eslint/parser": "^2.31.0",
-    "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^5.0.2",
-    "@vue/test-utils": "^1.0.2",
-    "axios": "^0.21.1",
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-eslint": "^10.1.0",
-    "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "body-parser": "^1.19.0",
-    "can-fixture-socket": "^2.0.3",
-    "chai": "^4.2.0",
-    "cross-env": "^7.0.2",
-    "date-fns": "^2.13.0",
-    "deep-object-diff": "^1.1.0",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "eslint-plugin-vue": "^6.2.2",
+    "@feathersjs/client": "^4.5.15",
+    "@feathersjs/feathers": "^4.5.15",
+    "@feathersjs/rest-client": "^4.5.15",
+    "@feathersjs/socketio-client": "^4.5.15",
+    "@typescript-eslint/eslint-plugin": "^5.34.0",
+    "@typescript-eslint/parser": "^5.34.0",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/eslint-config-typescript": "^11.0.0",
+    "eslint": "^8.22.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.3.0",
+    "feathers-hooks-common": "^6.1.5",
     "feathers-memory": "^4.1.0",
-    "istanbul": "^1.1.0-alpha.1",
-    "jsdom": "^16.2.2",
-    "jsdom-global": "^3.0.2",
-    "mocha": "^7.1.2",
-    "omit-deep-lodash": "^1.1.4",
-    "prettier": "^2.0.5",
-    "shx": "^0.3.2",
+    "omit-deep-lodash": "^1.1.7",
+    "prettier": "^2.7.1",
+    "shx": "^0.3.4",
     "socket.io-client": "^2.3.0",
     "standard": "^14.3.3",
-    "steal": "^2.2.4",
-    "steal-mocha": "^2.0.1",
-    "steal-typescript": "^0.5.0",
-    "testee": "^0.9.1",
     "ts-node": "^8.10.1",
     "typescript": "^4.7.4",
-    "vue": "^2.7.8",
-    "vue-server-renderer": "^2.6.11",
-    "vue-template-compiler": "^2.7.8",
-    "vuepress": "^1.4.1",
-    "vuepress-theme-default-prefers-color-scheme": "^1.0.7",
-    "vuex": "^3.3.0"
+    "vite": "^3.0.9",
+    "vue": "^3.1.0",
+    "vuepress": "^1.9.7",
+    "vuepress-theme-default-prefers-color-scheme": "^2.0.0",
+    "vuex": "^4.0.2"
+  },
+  "peerDependencies": {
+    "@vue/composition-api": "^1.0.0-rc.1",
+    "vue": "^2.0.0 || >=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@vue/composition-api": {
+      "optional": true
+    }
   }
 }

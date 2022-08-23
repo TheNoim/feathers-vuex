@@ -6,8 +6,8 @@ eslint
 
 import _omit from 'lodash/omit'
 
-import { MakeServicePluginOptions, Model } from './types'
-import { Id } from '@feathersjs/feathers'
+import type { MakeServicePluginOptions, Model } from './types'
+import type { Id } from '@feathersjs/feathers'
 
 export interface ServiceStateExclusiveDefaults {
   errorOnFind: any

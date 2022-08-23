@@ -3,7 +3,7 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import {
+import type {
   FeathersVuexOptions,
   Id,
   ModelInstanceOptions,
@@ -15,19 +15,20 @@ import {
   PatchParams
 } from './types'
 import { globalModels, prepareAddModel } from './global-models'
+import type { Params } from '../utils'
 import {
   mergeWithAccessors,
   checkNamespace,
   getId,
-  Params,
   isFeathersVuexInstance
 } from '../utils'
 import _merge from 'lodash/merge'
 import _get from 'lodash/get'
 import { EventEmitter } from 'events'
-import { ModelSetupContext } from './types'
-import { Store } from 'vuex'
-import { GetterName } from './service-module.getters'
+import type { ModelSetupContext } from './types'
+import type { Store } from 'vuex'
+import type { GetterName } from './service-module.getters'
+import type { Class } from '../type'
 
 const defaultOptions = {
   clone: false,
@@ -460,6 +461,6 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
 
   const BaseModelEventEmitter = BaseModel
   assertIsEventEmitter(BaseModelEventEmitter)
-  // @ts-ignore
-  return BaseModelEventEmitter as ModelStatic
+
+  return BaseModelEventEmitter as unknown as Class<Model> & ModelStatic
 }

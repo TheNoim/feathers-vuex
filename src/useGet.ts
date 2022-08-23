@@ -2,9 +2,10 @@
 eslint
 @typescript-eslint/no-explicit-any: 0
 */
-import { reactive, computed, toRefs, isRef, watch, Ref } from 'vue'
-import { Params } from './utils'
-import { Id, ModelStatic, Model } from './service-module/types'
+import type { Ref } from 'vue-demi'
+import { reactive, computed, toRefs, isRef, watch } from 'vue-demi'
+import type { Params } from './utils'
+import type { Id, ModelStatic, Model } from './service-module/types'
 import type { Class } from './type'
 
 interface UseGetOptions<C> {
@@ -100,12 +101,12 @@ export default function get<C>(options: UseGetOptions<C>): UseGetData<C> {
           : model.get(idToUse)
 
       return promise
-        .then((response) => {
+        .then(response => {
           state.isPending = false
           state.hasLoaded = true
           return response
         })
-        .catch((error) => {
+        .catch(error => {
           state.isPending = false
           state.error = error
           return error

@@ -4,7 +4,7 @@ no-console: 0,
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import { FeathersVuexOptions } from './types'
+import type { FeathersVuexOptions } from './types'
 
 /**
  * A global object that holds references to all Model Classes in the application.

@@ -5,7 +5,7 @@ eslint
 */
 import decode from 'jwt-decode'
 import inflection from 'inflection'
-import Vue from 'vue'
+import type Vue from 'vue-demi'
 import fastCopy from 'fast-copy'
 import _isObject from 'lodash/isObject'
 import _trim from 'lodash/trim'
@@ -13,7 +13,7 @@ import _omit from 'lodash/omit'
 import ObjectID from 'bson-objectid'
 import { globalModels as models } from './service-module/global-models'
 import stringify from 'fast-json-stable-stringify'
-import { Service } from '@feathersjs/feathers'
+import type { Service } from '@feathersjs/feathers'
 
 interface Query {
   [key: string]: any
@@ -333,11 +333,7 @@ export function updateOriginal(original, newData) {
     }
 
     if (shouldCopyProp) {
-      if (originalHasOwnProperty) {
-        original[key] = newProp
-      } else {
-        Vue.set(original, key, newProp)
-      }
+      original[key] = newProp
     }
   }
 }

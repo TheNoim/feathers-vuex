@@ -9,9 +9,9 @@ import makeDefaultState from './service-module.state'
 import makeGetters from './service-module.getters'
 import makeMutations from './service-module.mutations'
 import makeActions from './service-module.actions'
-import { Service } from '@feathersjs/feathers'
-import { MakeServicePluginOptions } from './types'
-import { Store } from 'vuex'
+import type { Service } from '@feathersjs/feathers'
+import type { MakeServicePluginOptions } from './types'
+import type { Store } from 'vuex'
 
 export default function makeServiceModule(
   service: Service<any>,
@@ -23,7 +23,7 @@ export default function makeServiceModule(
     state: makeDefaultState(options),
     getters: makeGetters(),
     mutations: makeMutations(),
-    actions: makeActions({service, options})
+    actions: makeActions({ service, options })
   }
   const fromOptions = _pick(options, [
     'state',

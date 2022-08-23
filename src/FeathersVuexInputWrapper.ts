@@ -1,6 +1,7 @@
 import _debounce from 'lodash/debounce'
+import { defineComponent } from 'vue-demi'
 
-export default {
+export default defineComponent({
   name: 'FeathersVuexInputWrapper',
   props: {
     item: {
@@ -64,4 +65,4 @@ export default {
 
     return this.$scopedSlots.default({ current, prop, createClone, handler })
   }
-}
+})

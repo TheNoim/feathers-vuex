@@ -2,10 +2,12 @@
 eslint
 @typescript-eslint/no-explicit-any: 0
 */
-import { computed, isRef, reactive, Ref, toRefs, watch } from 'vue'
+import type { Ref } from 'vue-demi'
+import { computed, isRef, reactive, toRefs, watch } from 'vue-demi'
 import debounce from 'lodash/debounce'
-import { getItemsFromQueryInfo, getQueryInfo, Params, Paginated } from './utils'
-import { ModelStatic, Model } from './service-module/types'
+import type { Params, Paginated } from './utils'
+import { getItemsFromQueryInfo, getQueryInfo } from './utils'
+import type { ModelStatic, Model } from './service-module/types'
 import type { Class } from './type'
 import { deepEqual as _isEqual } from 'fast-equals'
 
@@ -134,7 +136,7 @@ export default function find<C>(options: UseFindOptions<C>): UseFindData<C> {
       state.isPending = true
       state.haveBeenRequested = true
 
-      return model.find<C & Model>(params).then((response) => {
+      return model.find<C & Model>(params).then(response => {
         // To prevent thrashing, only clear error on response, not on initial request.
         state.error = null
         state.haveLoaded = true

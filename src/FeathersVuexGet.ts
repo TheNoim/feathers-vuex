@@ -1,5 +1,7 @@
+import { defineComponent } from 'vue-demi'
+
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-export default {
+export default defineComponent({
   props: {
     /**
      * The path of the service from which to pull records.
@@ -205,4 +207,4 @@ export default {
   render() {
     return this.$scopedSlots.default(this.scope)
   }
-}
+})

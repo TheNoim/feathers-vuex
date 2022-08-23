@@ -3,7 +3,7 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import { AuthState } from './types'
+import type { AuthState } from './types'
 
 export default function setupAuthState({
   userService,

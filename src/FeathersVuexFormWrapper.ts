@@ -1,4 +1,6 @@
-export default {
+import { defineComponent } from 'vue-demi'
+
+export default defineComponent({
   name: 'FeathersVuexFormWrapper',
   model: {
     prop: 'item',
@@ -97,4 +99,4 @@ export default {
       isNew
     })
   }
-}
+})

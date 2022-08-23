@@ -10,7 +10,9 @@ import FeathersVuexInputWrapper from '../FeathersVuexInputWrapper'
 import FeathersVuexPagination from '../FeathersVuexPagination'
 import FeathersVuexCount from '../FeathersVuexCount'
 import { globalModels } from '../service-module/global-models'
-import { GlobalModels } from '../service-module/types'
+import type { GlobalModels } from '../service-module/types'
+import { isVue3 } from 'vue-demi'
+import type { Plugin } from 'vue-demi'
 
 // Augment global models onto VueConstructor and instance
 declare module 'vue' {
@@ -20,14 +22,23 @@ declare module 'vue' {
   interface Vue {
     $FeathersVuex: GlobalModels
   }
+  interface ComponentCustomProperties {
+    $FeathersVuex: GlobalModels
+  }
 }
 
 export const FeathersVuex = {
   install(Vue, options = { components: true }) {
-    const shouldSetupComponents = options.components !== false
+    if (isVue3) {
+      Vue.config.globalProperties.$FeathersVuex = globalModels
+    } else {
+      // @ts-ignore
+      Vue.$FeathersVuex = globalModels
+      // @ts-ignore
+      Vue.prototype.$FeathersVuex = globalModels
+    }
 
-    Vue.$FeathersVuex = globalModels
-    Vue.prototype.$FeathersVuex = globalModels
+    const shouldSetupComponents = options.components !== false
 
     if (shouldSetupComponents) {
       Vue.component('FeathersVuexFind', FeathersVuexFind)
@@ -38,4 +49,4 @@ export const FeathersVuex = {
       Vue.component('FeathersVuexCount', FeathersVuexCount)
     }
   }
-}
+} as Plugin

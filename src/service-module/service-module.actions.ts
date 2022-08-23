@@ -5,8 +5,8 @@ eslint
 */
 import fastCopy from 'fast-copy'
 import { getId } from '../utils'
-import { Service } from '@feathersjs/feathers'
-import { MakeServicePluginOptions } from './types'
+import type { Service } from '@feathersjs/feathers'
+import type { MakeServicePluginOptions } from './types'
 
 interface ServiceAndOptions {
   service: Service<any>
@@ -303,7 +303,7 @@ export default function makeServiceActions({
       return Promise.reject(error)
     },
 
-    async afterFind({}, response) {
+    async afterFind(_, response) {
       return response
     },
 

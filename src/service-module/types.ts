@@ -1,8 +1,8 @@
-import { Service, Id } from '@feathersjs/feathers'
-import { Params, Paginated } from '../utils'
-import { EventEmitter } from 'events'
-import { Store } from 'vuex'
-import { Ref } from 'vue'
+import type { Service, Id } from '@feathersjs/feathers'
+import type { Params, Paginated } from '../utils'
+import type { EventEmitter } from 'events'
+import type { Store } from 'vuex'
+import type { Ref } from 'vue-demi'
 
 export { Id } from '@feathersjs/feathers'
 

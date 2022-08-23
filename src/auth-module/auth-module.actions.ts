@@ -43,7 +43,11 @@ export default function makeAuthActions(feathersClient) {
           if (state.serverAlias && state.userService) {
             const Model = Object.keys(models[state.serverAlias])
               .map(modelName => models[state.serverAlias][modelName])
-              .find(model => getNameFromPath(model.servicePath) === getNameFromPath(state.userService))
+              .find(
+                model =>
+                  getNameFromPath(model.servicePath) ===
+                  getNameFromPath(state.userService)
+              )
             if (Model) {
               // Copy user object to avoid setupInstance modifying payload state
               user = new Model(fastCopy(user))
@@ -55,13 +59,12 @@ export default function makeAuthActions(feathersClient) {
           state.userService &&
           response.hasOwnProperty(state.entityIdField)
         ) {
-          return dispatch(
-            'populateUser',
-            response[state.entityIdField]
-          ).then(() => {
-            commit('unsetAuthenticatePending')
-            return response
-          })
+          return dispatch('populateUser', response[state.entityIdField]).then(
+            () => {
+              commit('unsetAuthenticatePending')
+              return response
+            }
+          )
         }
         return response
 

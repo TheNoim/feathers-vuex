@@ -3,7 +3,7 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import {
+import type {
   FeathersVuexOptions,
   MakeServicePluginOptions,
   ServicePluginExtendOptions
@@ -18,9 +18,7 @@ import _get from 'lodash/get'
 interface ServiceOptionsDefaults {
   servicePath: string
   namespace: string
-  extend: (
-    options: ServicePluginExtendOptions
-  ) => {
+  extend: (options: ServicePluginExtendOptions) => {
     state: any
     getters: any
     mutations: any

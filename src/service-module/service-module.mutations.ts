@@ -4,7 +4,7 @@ eslint
 @typescript-eslint/no-explicit-any: 0,
 no-var: 0
 */
-import Vue from 'vue'
+import { reactive } from 'vue-demi'
 import { serializeError } from 'serialize-error'
 import {
   updateOriginal,
@@ -18,8 +18,8 @@ import { globalModels as models } from './global-models'
 import _omit from 'lodash/omit'
 import _get from 'lodash/get'
 import _isObject from 'lodash/isObject'
-import { Id } from '@feathersjs/feathers'
-import { ServiceState } from '..'
+import type { Id } from '@feathersjs/feathers'
+import type { ServiceState } from '..'
 
 export type PendingServiceMethodName =
   | 'find'
@@ -67,7 +67,7 @@ export default function makeServiceMutations() {
         }
         item.__isTemp = true
         if (items.length === 1) {
-          Vue.set(state.tempsById, tempId, item)
+          state.tempsById[tempId] = item
           return
         } else {
           if (!tempsById) {
@@ -77,7 +77,7 @@ export default function makeServiceMutations() {
         }
       } else {
         if (items.length === 1) {
-          Vue.set(state.keyedById, id, item)
+          state.keyedById[id] = item
           return
         } else {
           if (!keyedById) {
@@ -202,11 +202,11 @@ export default function makeServiceMutations() {
       const temp = state.tempsById[tempId]
       if (temp) {
         temp[state.idField] = id
-        Vue.delete(temp, '__isTemp')
-        Vue.delete(state.tempsById, tempId)
+        delete temp['__isTemp']
+        delete state.tempsById[tempId]
         // If an item already exists in the store from the `created` event firing
         // it will be replaced here
-        Vue.set(state.keyedById, id, temp)
+        state.keyedById[id] = temp
       }
 
       // Add _id to temp's clone as well if it exists
@@ -215,7 +215,7 @@ export default function makeServiceMutations() {
       if (tempClone) {
         tempClone[state.idField] = id
         Model.copiesById[id] = tempClone
-        Vue.delete(tempClone, '__isTemp')
+        delete tempClone['__isTemp']
       }
     },
 
@@ -227,12 +227,12 @@ export default function makeServiceMutations() {
       const Model = _get(models, `[${state.serverAlias}][${state.modelName}]`)
 
       if (isIdOk) {
-        Vue.delete(state.keyedById, idToBeRemoved)
+        delete state.keyedById[idToBeRemoved]
         if (
           Model?.copiesById &&
           Model.copiesById.hasOwnProperty(idToBeRemoved)
         ) {
-          Vue.delete(Model.copiesById, idToBeRemoved)
+          delete Model.copiesById[idToBeRemoved]
         }
       }
     },
@@ -245,7 +245,6 @@ export default function makeServiceMutations() {
           if (temp[state.idField]) {
             // Removes __isTemp if created
             delete temp.__isTemp
-            Vue.delete(temp, '__isTemp')
           }
         }
       })
@@ -273,9 +272,9 @@ export default function makeServiceMutations() {
       ])
 
       idsToRemove.forEach(id => {
-        Vue.delete(state.keyedById, id)
+        delete state.keyedById[id]
         if (Model?.copiesById && Model.copiesById.hasOwnProperty(id)) {
-          Vue.delete(Model.copiesById, id)
+          delete Model.copiesById[id]
         }
       })
     },
@@ -289,9 +288,7 @@ export default function makeServiceMutations() {
         'byServicePath',
         state.servicePath
       ])
-      Object.keys(Model.copiesById).forEach(k =>
-        Vue.delete(Model.copiesById, k)
-      )
+      Object.keys(Model.copiesById).forEach(k => delete Model.copiesById[k])
     },
 
     // Creates a copy of the record with the passed-in id, stores it in copiesById
@@ -314,7 +311,9 @@ export default function makeServiceMutations() {
 
       // Since it won't be added to the store, make it a Vue object
       if (!item.hasOwnProperty('__ob__')) {
-        item = Vue.observable(item)
+        // TODO: Check if this is working
+        // item = Vue.observable(item)
+        item = reactive(item)
       }
       if (!Model.hasOwnProperty('copiesById')) {
         Object.defineProperty(Model, 'copiesById', { value: {} })
@@ -371,7 +370,7 @@ export default function makeServiceMutations() {
       const copiesById = Model.copiesById
 
       if (copiesById[id]) {
-        Vue.delete(copiesById, id)
+        delete copiesById[id]
       }
     },
 
@@ -390,13 +389,13 @@ export default function makeServiceMutations() {
       )
 
       if (!state.pagination[qid]) {
-        Vue.set(state.pagination, qid, {})
+        state.pagination[qid] = {}
       }
       if (!query.hasOwnProperty('$limit') && response.hasOwnProperty('limit')) {
-        Vue.set(state.pagination, 'defaultLimit', response.limit)
+        state.pagination.defaultLimit = response.limit
       }
       if (!query.hasOwnProperty('$skip') && response.hasOwnProperty('skip')) {
-        Vue.set(state.pagination, 'defaultSkip', response.skip)
+        state.pagination.defaultSkip = response.skip
       }
 
       const mostRecent = {
@@ -425,7 +424,7 @@ export default function makeServiceMutations() {
 
       const newState = Object.assign({}, state.pagination[qid], qidData)
 
-      Vue.set(state.pagination, qid, newState)
+      state.pagination[qid] = newState
     },
 
     setPending(state, method: PendingServiceMethodName): void {
@@ -468,7 +467,7 @@ export default function makeServiceMutations() {
       ids.forEach(id => {
         const idx = isIdMethodPending.indexOf(id)
         if (idx >= 0) {
-          Vue.delete(isIdMethodPending, idx)
+          delete isIdMethodPending[idx]
         }
       })
     },

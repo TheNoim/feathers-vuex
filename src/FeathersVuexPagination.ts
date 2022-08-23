@@ -1,10 +1,7 @@
-import {
-  h,
-  computed,
-  watch
-} from 'vue'
+import { h, computed, watch } from 'vue-demi'
+import { defineComponent } from 'vue-demi'
 
-export default {
+export default defineComponent({
   name: 'FeathersVuexPagination',
   props: {
     /**
@@ -123,4 +120,4 @@ export default {
       }
     }
   }
-}
+})

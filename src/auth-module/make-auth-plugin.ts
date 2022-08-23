@@ -3,7 +3,7 @@ eslint
 @typescript-eslint/explicit-function-return-type: 0,
 @typescript-eslint/no-explicit-any: 0
 */
-import { FeathersVuexOptions } from '../service-module/types'
+import type { FeathersVuexOptions } from '../service-module/types'
 import setupState from './auth-module.state'
 import setupGetters from './auth-module.getters'
 import setupMutations from './auth-module.mutations'

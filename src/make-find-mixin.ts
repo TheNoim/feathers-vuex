@@ -258,7 +258,7 @@ export default function makeFindMixin(options) {
                 prop = prop.replace(PARAMS, FETCH_PARAMS)
               }
             }
-            this.$watch(prop, function() {
+            this.$watch(prop, function () {
               // If the request is going to be debounced, set IS_FIND_PENDING to true.
               // Without this, there's not a way to show a loading indicator during the debounce timeout.
               const paramsToUse = getParams({
@@ -300,7 +300,7 @@ export default function makeFindMixin(options) {
     if (typeof value === 'boolean') {
       data[NAME] = !!value
     } else if (typeof value === 'string') {
-      mixin.computed[NAME] = function() {
+      mixin.computed[NAME] = function () {
         // If the specified computed prop wasn't found, display an error.
         if (!returnTheValue) {
           if (!hasSomeAttribute(this, value, NAME)) {

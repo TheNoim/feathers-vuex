@@ -153,7 +153,7 @@ export default function makeFindMixin(options) {
                 prop.replace(PARAMS, FETCH_PARAMS)
               }
             }
-            this.$watch(prop, function() {
+            this.$watch(prop, function () {
               return this[GET_ACTION]()
             })
           })
@@ -183,7 +183,7 @@ export default function makeFindMixin(options) {
     if (typeof value === 'boolean') {
       data[NAME] = !!value
     } else if (typeof value === 'string') {
-      mixin.computed[NAME] = function() {
+      mixin.computed[NAME] = function () {
         // If the specified computed prop wasn't found, display an error.
         if (!returnTheValue) {
           if (!hasSomeAttribute(this, value, NAME)) {
