@@ -147,6 +147,13 @@ export default function makeServiceMutations() {
             } else {
               const original = state.keyedById[id]
               updateOriginal(original, item)
+
+              const existingClone = Model.copiesById[id]
+              console.log(existingClone)
+
+              if (existingClone) {
+                mergeWithAccessors(existingClone, item)
+              }
             }
           }
 
@@ -175,6 +182,16 @@ export default function makeServiceMutations() {
       mergeWithAccessors(existingItem, item, {
         suppressFastCopy: !isFeathersVuexInstance(item)
       })
+
+      const Model = _get(models, [state.serverAlias, state.modelName])
+
+      const existingClone = Model.copiesById[id]
+
+      if (existingClone) {
+        mergeWithAccessors(existingClone, item, {
+          suppressFastCopy: !isFeathersVuexInstance(item)
+        })
+      }
     }
   }
 
@@ -239,7 +256,7 @@ export default function makeServiceMutations() {
 
     // Removes temp records
     removeTemps(state, tempIds) {
-      tempIds.forEach(id => {
+      tempIds.forEach((id) => {
         const temp = state.tempsById[id]
         if (temp) {
           if (temp[state.idField]) {
@@ -263,7 +280,7 @@ export default function makeServiceMutations() {
       // Make sure we have an array of ids. Assume all are the same.
       const containsObjects = items[0] && _isObject(items[0])
       const idsToRemove = containsObjects
-        ? items.map(item => getId(item, idField))
+        ? items.map((item) => getId(item, idField))
         : items
 
       const Model = _get(models, [
@@ -272,7 +289,7 @@ export default function makeServiceMutations() {
         state.servicePath
       ])
 
-      idsToRemove.forEach(id => {
+      idsToRemove.forEach((id) => {
         Vue.delete(state.keyedById, id)
         if (Model?.copiesById && Model.copiesById.hasOwnProperty(id)) {
           Vue.delete(Model.copiesById, id)
@@ -289,7 +306,7 @@ export default function makeServiceMutations() {
         'byServicePath',
         state.servicePath
       ])
-      Object.keys(Model.copiesById).forEach(k =>
+      Object.keys(Model.copiesById).forEach((k) =>
         Vue.delete(Model.copiesById, k)
       )
     },
@@ -382,7 +399,7 @@ export default function makeServiceMutations() {
     updatePaginationForQuery(state, { qid, response, query = {} }) {
       const { data, total } = response
       const { idField } = state
-      const ids = data.map(i => i[idField])
+      const ids = data.map((i) => i[idField])
       const queriedAt = new Date().getTime()
       const { queryId, queryParams, pageId, pageParams } = getQueryInfo(
         { qid, query },
@@ -448,7 +465,7 @@ export default function makeServiceMutations() {
       ] as ServiceState['isIdCreatePending']
       // if `id` is an array, ensure it doesn't have duplicates
       const ids = Array.isArray(id) ? [...new Set(id)] : [id]
-      ids.forEach(id => {
+      ids.forEach((id) => {
         if (typeof id === 'number' || typeof id === 'string') {
           isIdMethodPending.push(id)
         }
@@ -465,7 +482,7 @@ export default function makeServiceMutations() {
       ] as ServiceState['isIdCreatePending']
       // if `id` is an array, ensure it doesn't have duplicates
       const ids = Array.isArray(id) ? [...new Set(id)] : [id]
-      ids.forEach(id => {
+      ids.forEach((id) => {
         const idx = isIdMethodPending.indexOf(id)
         if (idx >= 0) {
           Vue.delete(isIdMethodPending, idx)

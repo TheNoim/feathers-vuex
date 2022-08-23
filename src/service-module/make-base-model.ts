@@ -38,7 +38,7 @@ const defaultOptions = {
 /** Ensures value has EventEmitter instance props */
 function assertIsEventEmitter(val: unknown): asserts val is EventEmitter {
   if (
-    !Object.keys(EventEmitter.prototype).every(eeKey =>
+    !Object.keys(EventEmitter.prototype).every((eeKey) =>
       Object.prototype.hasOwnProperty.call(val, eeKey)
     )
   ) {
@@ -123,6 +123,8 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
           hasValidId && !options.clone
             ? getFromStore.call(this.constructor, id)
             : null
+
+        console.log(existingItem, options.clone)
 
         // If it already exists, update the original and return
         if (existingItem) {
@@ -299,7 +301,7 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
       const state = store.state[namespace]
       const commit = store.commit
       // Replace each plain object with a model instance.
-      Object.keys(state.keyedById).forEach(id => {
+      Object.keys(state.keyedById).forEach((id) => {
         const record = state.keyedById[id]
         commit(`${namespace}/removeItem`, record)
         commit(`${namespace}/addItem`, record)
