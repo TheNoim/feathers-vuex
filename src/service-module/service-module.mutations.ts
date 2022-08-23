@@ -149,7 +149,6 @@ export default function makeServiceMutations() {
               updateOriginal(original, item)
 
               const existingClone = Model.copiesById[id]
-              console.log(existingClone)
 
               if (existingClone) {
                 mergeWithAccessors(existingClone, item)

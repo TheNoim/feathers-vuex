@@ -124,8 +124,6 @@ export default function makeBaseModel(options: FeathersVuexOptions) {
             ? getFromStore.call(this.constructor, id)
             : null
 
-        console.log(existingItem, options.clone)
-
         // If it already exists, update the original and return
         if (existingItem) {
           if (!isFeathersVuexInstance(data)) {
