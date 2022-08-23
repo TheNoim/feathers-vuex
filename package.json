@@ -1,7 +1,7 @@
 {
   "name": "@fratzinger/feathers-vuex-perf",
   "description": "FeathersJS, Vue, and Nuxt for the artisan developer",
-  "version": "4.0.1-13",
+  "version": "4.0.1-14",
   "homepage": "https://github.com/fratzinger/feathers-vuex",
   "main": "dist/",
   "module": "dist/",
