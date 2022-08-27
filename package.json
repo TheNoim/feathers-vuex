@@ -106,6 +106,9 @@
   "directories": {
     "lib": "lib"
   },
+  "peerDependencies": {
+    "vue": "^2.7.10"
+  },
   "dependencies": {
     "@feathersjs/adapter-commons": "^4.5.2",
     "@feathersjs/commons": "^4.5.3",
@@ -179,9 +182,9 @@
     "testee": "^0.9.1",
     "ts-node": "^8.10.1",
     "typescript": "^4.7.4",
-    "vue": "^2.7.8",
+    "vue": "^2.7.10",
     "vue-server-renderer": "^2.6.11",
-    "vue-template-compiler": "^2.7.8",
+    "vue-template-compiler": "^2.7.10",
     "vuepress": "^1.4.1",
     "vuepress-theme-default-prefers-color-scheme": "^1.0.7",
     "vuex": "^3.3.0"
