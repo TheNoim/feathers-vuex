@@ -7,7 +7,7 @@ export default defineComponent({
     /**
      * An object containing { $limit, and $skip }
      */
-    value: {
+    modelValue: {
       type: Object,
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       default: () => null
@@ -29,7 +29,7 @@ export default defineComponent({
     const pageCount = computed(() => {
       const q = props.latestQuery
       if (q && q.response) {
-        return Math.ceil(q.response.total / props.value.$limit)
+        return Math.ceil(q.response.total / props.modelValue.$limit)
       } else {
         return 1
       }
@@ -49,13 +49,13 @@ export default defineComponent({
         } else if (pageNumber > pageCount.value) {
           pageNumber = pageCount.value
         }
-        const $limit = props.value.$limit
+        const $limit = props.modelValue.$limit
         const $skip = $limit * (pageNumber - 1)
 
         context.emit('input', { $limit, $skip })
       },
       get() {
-        const params = props.value
+        const params = props.modelValue
         if (params) {
           return pageCount.value === 0 ? 0 : params.$skip / params.$limit + 1
         } else {
