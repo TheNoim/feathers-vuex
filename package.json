@@ -1,5 +1,5 @@
 {
-  "name": "@fratzinger/feathers-vuex-perf",
+  "name": "@artesa/feathers-vuex-perf",
   "description": "FeathersJS, Vue, and Nuxt for the artisan developer",
   "version": "4.0.1-16",
   "homepage": "https://github.com/fratzinger/feathers-vuex",
