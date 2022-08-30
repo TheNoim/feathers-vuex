@@ -63,6 +63,6 @@ export default defineComponent({
     const { current, prop, createClone } = this
     const handler = this.debounce ? this.debouncedHandler : this.handler
 
-    return this.$scopedSlots.default({ current, prop, createClone, handler })
+    return this.$slots.default({ current, prop, createClone, handler })
   }
 })

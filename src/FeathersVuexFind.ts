@@ -134,7 +134,7 @@ export default defineComponent({
 
           return this.$store
             .dispatch(`${this.service}/find`, params)
-            .then(response => {
+            .then((response) => {
               this.isFindPending = false
               const { queryId, pageId } = getQueryInfo(params, response)
               this.queryId = queryId
@@ -172,7 +172,7 @@ export default defineComponent({
     const watch = Array.isArray(this.watch) ? this.watch : [this.watch]
 
     if (this.fetchQuery || this.query || this.params) {
-      watch.forEach(prop => {
+      watch.forEach((prop) => {
         if (typeof prop !== 'string') {
           throw new Error(`Values in the 'watch' array must be strings.`)
         }
@@ -193,6 +193,6 @@ export default defineComponent({
     }
   },
   render() {
-    return this.$scopedSlots.default(this.scope)
+    return this.$slots.default(this.scope)
   }
 })

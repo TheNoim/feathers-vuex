@@ -64,7 +64,7 @@ export default defineComponent({
       if (this.eager) {
         this.clone.commit()
       }
-      return this.clone.save(params).then(response => {
+      return this.clone.save(params).then((response) => {
         this.$emit('saved', response)
         if (this.isNew) {
           this.$emit('saved-new', response)
@@ -90,7 +90,7 @@ export default defineComponent({
   },
   render() {
     const { clone, save, reset, remove, isDirty, isNew } = this
-    return this.$scopedSlots.default({
+    return this.$slots.default({
       clone,
       save,
       reset,
