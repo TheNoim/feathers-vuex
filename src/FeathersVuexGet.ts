@@ -146,7 +146,7 @@ export default defineComponent({
               `${this.service}/get`,
               getArgs.length === 1 ? this.id : getArgs
             )
-            .then(response => {
+            .then((response) => {
               this.isGetPending = false
               return response
             })
@@ -189,7 +189,7 @@ export default defineComponent({
       this.params ||
       (this.id !== null && this.id !== undefined)
     ) {
-      watch.forEach(prop => {
+      watch.forEach((prop) => {
         if (typeof prop !== 'string') {
           throw new Error(`Values in the 'watch' array must be strings.`)
         }
@@ -205,6 +205,6 @@ export default defineComponent({
     }
   },
   render() {
-    return this.$scopedSlots.default(this.scope)
+    return this.$slots.default(this.scope)
   }
 })
